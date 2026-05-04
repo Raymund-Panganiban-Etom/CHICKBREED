@@ -16,8 +16,14 @@ if(isset($_POST["Logout"])){
 
 $name = $_SESSION["username"] . "<br>";
 
-echo "Welcome $name !";
+echo "Welcome $name!";
 
+if(isset($_POST["Sell"])){
+    header("Location: sell.php");
+}
+if(isset($_POST["Buy"])){
+    header("Location: buy.php");
+}
 
 ?>
 
@@ -27,14 +33,24 @@ echo "Welcome $name !";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="home.css">
+    <title>Home</title>
 </head>
 <body>
     This is The Home page<br>
     <!-- <a href="homes.php">This goes to the home page</a><br> -->
      <form action="home.php" method="post">
-        <input type="submit" name="Logout" value="Logout">
+        <input type="submit" name="Logout" value="Logout" class="Logout liquids">
+
+        <div class="f">
+            <form action="home.php" method="post">
+                <input type="submit" name="Sell" value="Sell" class="Sell liquid">
+                <input type="submit" name="Buy" value="Buy" class="Buy liquid">
+            </form>
+        </div>
      </form>
+
+
 </body>
 </html>
 
