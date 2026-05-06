@@ -1,0 +1,30 @@
+[06-May-2026 17:09:13 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'chickacc.buyer_consent_logs' doesn't exist in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:79
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(79): mysqli->prepare('INSERT INTO buy...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 79
+[06-May-2026 17:10:38 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'chickacc.buyer_consent_logs' doesn't exist in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:79
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(79): mysqli->prepare('INSERT INTO buy...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 79
+[06-May-2026 17:31:52 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`chickacc`.`buyers`, CONSTRAINT `buyers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `credentialss` (`ids`) ON DELETE CASCADE) in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:101
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(101): mysqli_stmt->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 101
+[06-May-2026 17:31:57 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`chickacc`.`buyers`, CONSTRAINT `buyers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `credentialss` (`ids`) ON DELETE CASCADE) in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:101
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(101): mysqli_stmt->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 101
+[06-May-2026 17:43:50 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:48
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(48): mysqli->query('DROP TABLE IF E...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 48
+[06-May-2026 17:43:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:48
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(48): mysqli->query('DROP TABLE IF E...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 48
