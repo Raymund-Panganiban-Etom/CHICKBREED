@@ -58,6 +58,12 @@
         <h2 style="margin:0">Your Items</h2>
         <div class="small">Click the plus to add a new entry. Entries are stored in our database with your consent.</div>
       </div>
+
+    <!-- Seller notifications -->
+    <div class="section" id="notificationsSection" style="display:none">
+      <h3>Buyer Inquiries & Notifications</h3>
+      <div id="notificationsList">Loading notifications...</div>
+    </div>
     </div>
 
     <div class="form-card" id="formCard" aria-hidden="true">
@@ -230,11 +236,14 @@ async function renderList(){
     
     items.forEach((it) => {
       const item = document.createElement('div'); item.className = 'item';
-      const img = document.createElement('img'); img.className = 'thumb';
+      // const img = document.createElement('img'); img.className = 'thumb';
       
-      img.src = it.photo_name 
-        ? `sell_handler.php?action=getPhoto&location_id=${it.location_id}&user_id=${currentUserId}`
-        : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="72"><rect width="100%" height="100%" fill="%23f0f2f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23b0b6c3" font-size="12">No photo</text></svg>';
+const img = document.createElement('img');
+img.className = 'thumb';
+img.src = `sell_handler.php?action=getPhoto&location_id=${it.location_id}`;
+img.onerror = () => {
+    img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="72"><rect width="100%" height="100%" fill="%23f0f2f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23b0b6c3" font-size="12">No photo</text></svg>';
+};
 
       const lat = parseFloat(it.latitude);
       const lng = parseFloat(it.longitude);
@@ -577,6 +586,7 @@ consentAccept.addEventListener('click', async () => {
       
       await renderList();
       alert('Entry saved successfully with location data.');
+      setTimeout(() => { renderList(); }, 500);
     } else {
       alert('Failed to save entry: ' + (data.error || 'Unknown error'));
     }
@@ -597,6 +607,112 @@ function readFileAsDataURL(file){
     fr.readAsDataURL(file);
   });
 }
+
+  // ---------- Seller notifications (polling) ----------
+  async function fetchNotifications() {
+    try {
+      const fd = new FormData(); fd.append('action','getNotifications');
+      const res = await fetch('sell_handler.php', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) {
+        renderNotifications(data.data || []);
+      } else {
+        document.getElementById('notificationsList').innerText = 'No notifications.';
+      }
+    } catch (e) {
+      document.getElementById('notificationsList').innerText = 'Error loading notifications';
+    }
+  }
+
+  function renderNotifications(items) {
+    const el = document.getElementById('notificationsList');
+    if (!items || items.length === 0) { el.innerHTML = '<div class="small">No notifications.</div>'; document.getElementById('notificationsSection').style.display = 'none'; return; }
+    document.getElementById('notificationsSection').style.display = 'block';
+    el.innerHTML = '';
+    items.forEach(n => {
+      const row = document.createElement('div');
+      row.style.cssText = 'background:#fff;padding:12px;border-radius:8px;margin:8px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px';
+      row.innerHTML = `
+        <div>
+          <strong>Buyer:</strong> ${escapeHtml(n.buyer_name || 'Unknown')}<br>
+          <strong>Message:</strong> ${escapeHtml(n.message_summary || '')}<br>
+          <strong>Buyer User ID:</strong> ${escapeHtml(n.buyer_user_id || '')} ${n.buyer_username ? '('+escapeHtml(n.buyer_username)+')' : ''}<br>
+          <strong>Listing:</strong> ${escapeHtml(n.listing_desc || '')}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn" onclick="respondInquiry(${n.inquiry_id}, 'accept')">Accept</button>
+            <button class="btn secondary" onclick="respondInquiry(${n.inquiry_id}, 'ignore')">Ignore</button>
+            <button class="btn secondary" onclick="viewConversation(${n.inquiry_id})">View</button>
+            <button class="btn secondary" style="background:#f3f4f6;color:#111;border:1px solid #ddd" onclick="dismissNotification(${n.notif_id})">Dismiss</button>
+        </div>
+      `;
+      el.appendChild(row);
+    });
+  }
+
+  // Conversation modal
+  function showConvModal(html) {
+    let modal = document.getElementById('convModal');
+    if (!modal) {
+      modal = document.createElement('div'); modal.id = 'convModal'; modal.className = 'modal';
+      modal.innerHTML = `<div class="modal-card"><div id="convContent"></div><div style="text-align:right;margin-top:8px"><button class="btn secondary" id="convClose">Close</button></div></div>`;
+      document.body.appendChild(modal);
+      document.getElementById('convClose').onclick = () => { modal.style.display = 'none'; };
+    }
+    document.getElementById('convContent').innerHTML = html;
+    modal.style.display = 'flex';
+  }
+
+  async function viewConversation(inquiryId) {
+    try {
+      const fd = new FormData(); fd.append('action','getInquiryMessages'); fd.append('inquiry_id', inquiryId);
+      const res = await fetch('sell_handler.php', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!data.success) return alert('Failed to load conversation: ' + (data.error || 'Unknown'));
+      const msgs = data.messages || [];
+      const profile = data.profile;
+      let html = `<h4>Conversation (Inquiry ${inquiryId})</h4>`;
+      if (profile) html += `<div style="margin-bottom:8px"><strong>Profile:</strong> ${escapeHtml(profile.fullname || '')} ${escapeHtml(profile.email||'')} ${escapeHtml(profile.phone||'')}</div>`;
+      if (msgs.length === 0) html += '<div class="small">No messages yet.</div>';
+      msgs.forEach(m => {
+        const who = m.sender_type === 'buyer' ? (m.buyer_username ? escapeHtml(m.buyer_username) + ' (buyer)' : 'Buyer') : 'You (seller)';
+        html += `<div style="padding:8px;border-radius:6px;margin-bottom:6px;background:#f7f9fc"><div style="font-size:13px;color:#333"><strong>${who}</strong> <small style="color:#666">${new Date(m.sent_at).toLocaleString()}</small></div><div style="margin-top:6px;white-space:pre-wrap">${escapeHtml(m.message_content)}</div></div>`;
+      });
+      html += `<div style="margin-top:8px"><button class="btn" onclick="respondInquiry(${inquiryId}, 'accept')">Accept</button> <button class="btn secondary" onclick="respondInquiry(${inquiryId}, 'ignore')">Ignore</button></div>`;
+      showConvModal(html);
+    } catch (e) { alert('Error loading conversation: ' + e.message); }
+    // After the alert, close the modal if it's open
+let modal = document.getElementById('convModal');
+if (modal) modal.style.display = 'none';
+  }
+
+  async function respondInquiry(inquiryId, mode) {
+    const reply = mode === 'accept' ? prompt('Optional message to buyer (confirm acceptance)') || '' : (prompt('Optional reason for ignoring') || '');
+    try {
+      const fd = new FormData(); fd.append('action','respondInquiry'); fd.append('inquiry_id', inquiryId); fd.append('mode', mode); fd.append('response', reply);
+      const res = await fetch('sell_handler.php', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) {
+        alert('Response sent');
+        fetchNotifications();
+      } else alert('Failed: ' + (data.error || 'Unknown'));
+    } catch (e) { alert('Error: ' + e.message); }
+  }
+
+  async function dismissNotification(notifId) {
+    try {
+      const fd = new FormData(); fd.append('action','dismissNotification'); fd.append('notif_id', notifId);
+      const res = await fetch('sell_handler.php', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) fetchNotifications(); else alert('Failed to dismiss');
+    } catch (e) { alert('Error: ' + e.message); }
+  }
+
+  // Start periodic notification polling for sellers
+  (function initNotificationsPoll(){
+    fetchNotifications();
+    setInterval(fetchNotifications, 12000);
+  })();
 </script>
 </body>
 </html>

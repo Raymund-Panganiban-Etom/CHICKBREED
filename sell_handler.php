@@ -48,16 +48,154 @@ if ($action === 'getEntries') {
     exit;
 }
 
+// ---------- GET SELLER NOTIFICATIONS / INQUIRIES ----------
+if ($action === 'getNotifications') {
+    if (empty($_SESSION['user_id'])) {
+        echo json_encode(['success' => false, 'error' => 'Not authenticated']);
+        exit;
+    }
+    $seller_id = (int)$_SESSION['user_id'];
+
+    $sql = "SELECT n.notif_id, n.buyer_id, n.inquiry_id, n.message_summary, n.is_read, n.created_at,
+                   c.User AS buyer_username, b.fullname AS buyer_name, b.email AS buyer_email, b.phone AS buyer_phone,
+                   li.description AS listing_desc, bi.location_id AS listed_location_id, bi.profile_id
+            FROM seller_notifications n
+            LEFT JOIN buyers b ON b.buyer_id = n.buyer_id
+            LEFT JOIN credentialss c ON c.ids = b.user_id
+            LEFT JOIN buyer_inquiries bi ON bi.inquiry_id = n.inquiry_id
+            LEFT JOIN locations li ON li.location_id = bi.location_id
+            WHERE n.seller_id = ? AND (n.is_read = 0 OR n.is_read IS NULL)
+            ORDER BY n.created_at DESC
+            LIMIT 200";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $seller_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $rows = $res->fetch_all(MYSQLI_ASSOC);
+    echo json_encode(['success' => true, 'data' => $rows]);
+    $stmt->close();
+    exit;
+}
+
+// ---------- GET INQUIRY MESSAGES (conversation) ----------
+if ($action === 'getInquiryMessages') {
+    if (empty($_SESSION['user_id'])) {
+        echo json_encode(['success' => false, 'error' => 'Not authenticated']);
+        exit;
+    }
+    $seller_id = (int)$_SESSION['user_id'];
+    $inquiry_id = (int)($_POST['inquiry_id'] ?? 0);
+    if (!$inquiry_id) {
+        echo json_encode(['success' => false, 'error' => 'Missing inquiry_id']);
+        exit;
+    }
+
+    // Verify inquiry belongs to seller
+    $inq = $conn->query("SELECT user_id, profile_id FROM buyer_inquiries WHERE inquiry_id = $inquiry_id AND seller_id = $seller_id LIMIT 1");
+    if (!$inq || $inq->num_rows == 0) {
+        echo json_encode(['success' => false, 'error' => 'Inquiry not found or not yours']);
+        exit;
+    }
+    $row = $inq->fetch_assoc();
+    $buyer_user_id = (int)$row['user_id'];
+    $profile_id = (int)$row['profile_id'];
+
+    // Get messages
+    $stmt = $conn->prepare("SELECT message_id, sender_type, message_content, sent_at FROM buyer_seller_messages WHERE inquiry_id = ? ORDER BY sent_at ASC");
+    $stmt->bind_param('i', $inquiry_id);
+    $stmt->execute();
+    $msgs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // Get buyer details
+    $buyer_info = [];
+    if ($profile_id > 0) {
+        $prof = $conn->query("SELECT fullname, email, phone FROM buyer_profiles WHERE profile_id = $profile_id LIMIT 1");
+        if ($prof && $prof->num_rows) $buyer_info = $prof->fetch_assoc();
+    } else {
+        $buy = $conn->query("SELECT fullname, email, phone FROM buyers WHERE user_id = $buyer_user_id LIMIT 1");
+        if ($buy && $buy->num_rows) $buyer_info = $buy->fetch_assoc();
+    }
+    $cred = $conn->query("SELECT User FROM credentialss WHERE ids = $buyer_user_id LIMIT 1");
+    $buyer_username = $cred ? ($cred->fetch_assoc()['User'] ?? 'Buyer') : 'Buyer';
+
+    $profile = [
+        'fullname' => $buyer_info['fullname'] ?? 'N/A',
+        'email'    => $buyer_info['email'] ?? '',
+        'phone'    => $buyer_info['phone'] ?? '',
+        'username' => $buyer_username
+    ];
+
+    echo json_encode(['success' => true, 'messages' => $msgs, 'profile' => $profile]);
+    exit;
+}
+// ---------- DISMISS NOTIFICATION (seller) ----------
+if ($action === 'dismissNotification') {
+    if (empty($_SESSION['user_id'])) { echo json_encode(['success'=>false,'error'=>'Not authenticated']); exit; }
+    $seller_id = (int)$_SESSION['user_id'];
+    $notif_id = (int)($_POST['notif_id'] ?? 0);
+    if (!$notif_id) { echo json_encode(['success'=>false,'error'=>'Missing notif_id']); exit; }
+
+    // ensure column exists (best-effort)
+    $conn->query("ALTER TABLE seller_notifications ADD COLUMN IF NOT EXISTS dismissed_by_seller TINYINT(1) DEFAULT 0");
+
+    $stmt = $conn->prepare("UPDATE seller_notifications SET is_read = 1, dismissed_by_seller = 1 WHERE notif_id = ? AND seller_id = ?");
+    $stmt->bind_param('ii', $notif_id, $seller_id);
+    $stmt->execute();
+    $ok = $stmt->affected_rows >= 0;
+    $stmt->close();
+    echo json_encode(['success' => $ok]);
+    exit;
+}
+
+// ---------- RESPOND TO INQUIRY (accept/ignore) ----------
+if ($action === 'respondInquiry') {
+    if (empty($_SESSION['user_id'])) {
+        echo json_encode(['success' => false, 'error' => 'Not authenticated']);
+        exit;
+    }
+    $seller_id = (int)$_SESSION['user_id'];
+    $inquiry_id = (int)($_POST['inquiry_id'] ?? 0);
+    $response = trim($_POST['response'] ?? '');
+    $mode = ($_POST['mode'] ?? 'accept');
+
+    if (!$inquiry_id) {
+        echo json_encode(['success' => false, 'error' => 'Missing inquiry_id']);
+        exit;
+    }
+
+    // Verify ownership and get buyer_user_id
+    $inq = $conn->query("SELECT user_id FROM buyer_inquiries WHERE inquiry_id = $inquiry_id AND seller_id = $seller_id LIMIT 1");
+    if (!$inq || $inq->num_rows == 0) {
+        echo json_encode(['success' => false, 'error' => 'Inquiry not found']);
+        exit;
+    }
+
+    $new_status = ($mode === 'accept') ? 'contacted' : 'archived';
+    $conn->query("UPDATE buyer_inquiries SET inquiry_status = '$new_status', last_interaction = NOW() WHERE inquiry_id = $inquiry_id");
+
+    $reply_msg = $response ?: ($mode === 'accept' ? 'Your inquiry has been accepted.' : 'Your inquiry was not accepted.');
+    $msgStmt = $conn->prepare("INSERT INTO buyer_seller_messages (inquiry_id, sender_type, message_content) VALUES (?, 'seller', ?)");
+    $msgStmt->bind_param('is', $inquiry_id, $reply_msg);
+    $msgStmt->execute();
+    $msgStmt->close();
+
+    $conn->query("UPDATE seller_notifications SET is_read = 1 WHERE inquiry_id = $inquiry_id AND seller_id = $seller_id");
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
 // ---------- SAVE ENTRY (with photo & location) ----------
 if ($action === 'saveEntry') {
     if (empty($_SESSION['user_id'])) {
-        echo json_encode(['success' => false, 'error' => 'Session expired, please login again']);
+        echo json_encode(['success' => false, 'error' => 'Session expired']);
         exit;
     }
     $user_id = (int)$_SESSION['user_id'];
     $description = trim($_POST['description'] ?? '');
     if (strlen($description) < 2) {
-        echo json_encode(['success' => false, 'error' => 'Description is required (min 2 chars)']);
+        echo json_encode(['success' => false, 'error' => 'Description required']);
         exit;
     }
     $socmed = trim($_POST['socmed'] ?? '');
@@ -68,37 +206,47 @@ if ($action === 'saveEntry') {
     $consent_text = trim($_POST['consent_text'] ?? 'Consent given');
     $device_info = trim($_POST['device_info'] ?? '');
 
-    // Photo processing (optional, lightweight)
+    // ---------- PHOTO PROCESSING (fix) ----------
     $photo_data = null;
     $photo_name = null;
     if (!empty($_POST['photo_base64'])) {
         $base64 = $_POST['photo_base64'];
-        if (preg_match('/^data:image\/(jpeg|png|jpg);base64,/', $base64, $matches)) {
-            $imageType = $matches[1];
-            $base64 = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
-            $photo_data = base64_decode($base64);
-            if ($photo_data && strlen($photo_data) <= 2 * 1024 * 1024) { // max 2MB
-                $photo_name = 'img_' . time() . '_' . rand(100,999) . '.' . ($imageType === 'jpg' ? 'jpg' : $imageType);
-            } else {
-                echo json_encode(['success' => false, 'error' => 'Photo too large (max 2MB)']);
-                exit;
-            }
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Invalid image format (JPEG/PNG only)']);
+        // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+        if (strpos($base64, 'base64,') !== false) {
+            $base64 = explode('base64,', $base64)[1];
+        }
+        $photo_data = base64_decode($base64);
+        if ($photo_data === false || $photo_data === null) {
+            echo json_encode(['success' => false, 'error' => 'Invalid image data']);
             exit;
         }
+        if (strlen($photo_data) > 2 * 1024 * 1024) {
+            echo json_encode(['success' => false, 'error' => 'Photo exceeds 2MB']);
+            exit;
+        }
+        $photo_name = 'img_' . time() . '_' . rand(100,999) . '.jpg';
     }
+
+    // Ensure the photo column is LONGBLOB
+    $conn->query("ALTER TABLE locations MODIFY photo LONGBLOB");
 
     $stmt = $conn->prepare("INSERT INTO locations 
         (user_id, description, socmed, number, location_address, latitude, longitude, photo, photo_name, consent_text, device_info, saved_at) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-    // types: i s s s s d d b s s s
-    $stmt->bind_param("issssddbsss", $user_id, $description, $socmed, $number, $location_address, $latitude, $longitude, $photo_data, $photo_name, $consent_text, $device_info);
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => 'Prepare failed: ' . $conn->error]);
+        exit;
+    }
+    // Note: 's' works for BLOB when binding by reference
+    $stmt->bind_param("issssddssss", 
+        $user_id, $description, $socmed, $number, $location_address, 
+        $latitude, $longitude, $photo_data, $photo_name, $consent_text, $device_info
+    );
     
     if ($stmt->execute()) {
         echo json_encode(['success' => true, 'location_id' => $stmt->insert_id]);
     } else {
-        echo json_encode(['success' => false, 'error' => $stmt->error]);
+        echo json_encode(['success' => false, 'error' => 'DB error: ' . $stmt->error]);
     }
     $stmt->close();
     exit;
@@ -128,6 +276,10 @@ if ($action === 'getPhoto') {
         exit;
     }
     $location_id = (int)($_GET['location_id'] ?? 0);
+    if (!$location_id) {
+        http_response_code(400);
+        exit;
+    }
     $user_id = (int)$_SESSION['user_id'];
     $stmt = $conn->prepare("SELECT photo, photo_name FROM locations WHERE location_id = ? AND user_id = ? AND photo IS NOT NULL");
     $stmt->bind_param("ii", $location_id, $user_id);
@@ -135,8 +287,13 @@ if ($action === 'getPhoto') {
     $stmt->store_result();
     $stmt->bind_result($photo_data, $photo_name);
     if ($stmt->fetch() && !is_null($photo_data)) {
-        header('Content-Type: image/jpeg');
-        header('Content-Disposition: inline; filename="' . $photo_name . '"');
+        // Detect MIME type
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_buffer($finfo, $photo_data);
+        finfo_close($finfo);
+        if (!$mime) $mime = 'image/jpeg';
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . strlen($photo_data));
         echo $photo_data;
     } else {
         http_response_code(404);
