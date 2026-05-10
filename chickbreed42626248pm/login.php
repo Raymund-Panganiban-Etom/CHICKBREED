@@ -1,52 +1,39 @@
 <?php
-
 session_start();
+include("regdb.php");
 
-include ("regdb.php");
+if (isset($_POST["login"])) {
+    if (!empty($_POST["username"]) && !empty($_POST["password"])) {
 
-if (isset($_POST["login"])){
-    if(!empty($_POST["username"]) && !empty($_POST["password"])){
-      
-         $_SESSION["username"] = $_POST["username"];
-        $_SESSION["password"] = $_POST["password"];
+        $username = $_POST["username"];
+        $password = $_POST["password"];
 
-$username = $_SESSION["username"];
-    $password = $_SESSION["password"];
+        $stmt = $connection->prepare("SELECT Ids, User, Pass FROM credentialss WHERE User = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    // Prepare statement to prevent SQL injection
-    $stmt = $connection->prepare("SELECT User, Pass FROM credentialss WHERE User = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            if (password_verify($password, $row["Pass"])) {
+                
+                // ✅ IMPORTANT
+                $_SESSION['user_id']   = $row['Ids'];
+                $_SESSION['username']  = $row['User'];
 
-    if ($row = $result->fetch_assoc()) {
-        // Verify hashed password
-        if (password_verify($password, $row["Pass"])) {
-            $_SESSION["username"] = $row["User"];
-            header("Location: home.php"); // Go to other local file no need use hyperlinks in Html
-        exit; // stop script after redirect
-            
+                header("Location: home.php");   // ← Back to your original
+                exit;
+            } else {
+                echo "<p style='color:red'>Invalid password.</p>";
+            }
         } else {
-            echo "Invalid password.";
+            echo "<p style='color:red'>No user found with that username.</p>";
         }
-         } else {
-        echo "No user found with that username.";
+        $stmt->close();
+    } else {
+        echo "<p style='color:red'>Please fill username and password.</p>";
     }
-    $stmt->close();
 }
 $connection->close();
-
-
-
-
-        // echo $_SESSION["username"] . "<br>";
-        // echo $_SESSION["password"]  . "<br>";
-      
-    }
-    else{
-            echo "Please Fill Username or Password <br>";
-    }
-    
 ?>
 
 <!DOCTYPE html>

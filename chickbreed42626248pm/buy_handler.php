@@ -1,0 +1,414 @@
+<?php
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+// buy_handler.php – uses user_id from credentialss, no buyer_id
+session_start();
+header('Content-Type: application/json');
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/buy_errors.log');
+ob_clean();
+mysqli_report(MYSQLI_REPORT_OFF);
+
+function send_json($data) {
+    global $conn;
+    if (isset($conn)) $conn->close();
+    echo json_encode($data);
+    exit;
+}
+
+$conn = new mysqli('localhost', 'root', '', 'Chickacc');
+if ($conn->connect_error) {
+    send_json(['success' => false, 'error' => 'Database connection failed']);
+}
+
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+// ---------- getSession ----------
+if ($action === 'getSession') {
+    $uid = $_SESSION['user_id'] ?? 0;
+    if ($uid > 0) {
+        send_json(['success' => true, 'user_id' => $uid]);
+    } else {
+        send_json(['success' => false, 'error' => 'Not logged in']);
+    }
+}
+
+// ---------- saveBuyer (creates/updates buyers table) ----------
+if ($action === 'saveBuyer') {
+    if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] <= 0) {
+        send_json(['success' => false, 'error' => 'You must log in first']);
+    }
+    $user_id = (int)$_SESSION['user_id'];
+    $fullname = trim($_POST['fullname'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $location_address = trim($_POST['location_address'] ?? '');
+    $latitude = !empty($_POST['latitude']) ? (float)$_POST['latitude'] : null;
+    $longitude = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
+    $preferences = trim($_POST['preferences'] ?? '');
+    $consent_text = trim($_POST['consent_text'] ?? '');
+    $buyer_agent = trim($_POST['buyer_agent'] ?? '');
+
+    if (empty($fullname) || empty($email) || empty($phone)) {
+        send_json(['success' => false, 'error' => 'Missing required fields']);
+    }
+
+    // Create buyers table if missing
+    $conn->query("CREATE TABLE IF NOT EXISTS `buyers` (
+        `buyer_id` int(11) NOT NULL AUTO_INCREMENT,
+        `user_id` int(11) NOT NULL,
+        `fullname` varchar(100) NOT NULL,
+        `email` varchar(100) NOT NULL,
+        `phone` varchar(50) NOT NULL,
+        `location_address` varchar(255) DEFAULT NULL,
+        `latitude` decimal(10,7) DEFAULT NULL,
+        `longitude` decimal(10,7) DEFAULT NULL,
+        `preferences` text,
+        `consent_text` text,
+        `consent_timestamp` datetime DEFAULT NULL,
+        `buyer_agent` varchar(255) DEFAULT NULL,
+        `terms_accepted` tinyint(1) DEFAULT 0,
+        `accepted_at` datetime DEFAULT NULL,
+        `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`buyer_id`),
+        UNIQUE KEY `user_id` (`user_id`),
+        CONSTRAINT `fk_buyer_user` FOREIGN KEY (`user_id`) REFERENCES `credentialss` (`ids`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $stmt = $conn->prepare("INSERT INTO buyers 
+        (user_id, fullname, email, phone, location_address, latitude, longitude, preferences, consent_text, consent_timestamp, buyer_agent, terms_accepted, accepted_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, 1, NOW())
+        ON DUPLICATE KEY UPDATE
+        fullname = VALUES(fullname),
+        email = VALUES(email),
+        phone = VALUES(phone),
+        location_address = VALUES(location_address),
+        latitude = VALUES(latitude),
+        longitude = VALUES(longitude),
+        preferences = VALUES(preferences),
+        buyer_agent = VALUES(buyer_agent),
+        updated_at = NOW()");
+    
+    $stmt->bind_param("issssddsss", $user_id, $fullname, $email, $phone, $location_address, $latitude, $longitude, $preferences, $consent_text, $buyer_agent);
+    if (!$stmt->execute()) {
+        error_log("saveBuyer error: " . $stmt->error);
+        send_json(['success' => false, 'error' => 'Could not save buyer: ' . $stmt->error]);
+    }
+    $buyer_id = $stmt->insert_id;
+    if ($buyer_id == 0) {
+        $res = $conn->query("SELECT buyer_id FROM buyers WHERE user_id = $user_id");
+        if ($row = $res->fetch_assoc()) $buyer_id = $row['buyer_id'];
+    }
+    $stmt->close();
+
+    // Consent log
+    $conn->query("CREATE TABLE IF NOT EXISTS `buyer_consent_logs` (
+        `log_id` int(11) NOT NULL AUTO_INCREMENT,
+        `buyer_id` int(11) NOT NULL,
+        `consent_text` text,
+        `ip_address` varchar(45) DEFAULT NULL,
+        `user_agent` varchar(255) DEFAULT NULL,
+        `given_at` datetime DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`log_id`)
+    ) ENGINE=InnoDB");
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $log = $conn->prepare("INSERT INTO buyer_consent_logs (buyer_id, consent_text, ip_address, user_agent) VALUES (?, ?, ?, ?)");
+    $log->bind_param("isss", $buyer_id, $consent_text, $ip, $buyer_agent);
+    $log->execute();
+    $log->close();
+
+    $_SESSION['buyer_id'] = $buyer_id;
+    send_json(['success' => true, 'buyer_id' => $buyer_id, 'user_id' => $user_id]);
+}
+
+// ---------- getBuyer ----------
+if ($action === 'getBuyer') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $user_id = (int)$_SESSION['user_id'];
+    $res = $conn->query("SELECT buyer_id, user_id, fullname, email, phone, location_address, latitude, longitude, preferences, created_at FROM buyers WHERE user_id = $user_id LIMIT 1");
+    if ($row = $res->fetch_assoc()) {
+        $_SESSION['buyer_id'] = (int)$row['buyer_id'];
+        send_json(['success' => true, 'buyer' => $row]);
+    } else {
+        send_json(['success' => false, 'error' => 'Buyer not found']);
+    }
+}
+
+// ---------- BUYER PROFILES (multiple saved search/contact profiles) ----------
+if ($action === 'saveBuyerProfile') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $user_id = (int)$_SESSION['user_id'];
+
+    $conn->query("CREATE TABLE IF NOT EXISTS buyer_profiles (
+        profile_id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        fullname VARCHAR(150) NOT NULL,
+        email VARCHAR(150) DEFAULT NULL,
+        phone VARCHAR(50) DEFAULT NULL,
+        preferences TEXT,
+        location_address VARCHAR(255) DEFAULT NULL,
+        latitude DECIMAL(10,7) DEFAULT NULL,
+        longitude DECIMAL(10,7) DEFAULT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $profile_id = (int)($_POST['profile_id'] ?? 0);
+    $fullname = trim($_POST['fullname'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $preferences = trim($_POST['preferences'] ?? '');
+    $location_address = trim($_POST['location_address'] ?? '');
+    $latitude = isset($_POST['latitude']) && $_POST['latitude'] !== '' ? (float)$_POST['latitude'] : null;
+    $longitude = isset($_POST['longitude']) && $_POST['longitude'] !== '' ? (float)$_POST['longitude'] : null;
+
+    if (!$fullname) send_json(['success' => false, 'error' => 'Full name is required']);
+
+    if ($profile_id) {
+        $stmt = $conn->prepare("UPDATE buyer_profiles SET fullname=?, email=?, phone=?, preferences=?, location_address=?, latitude=?, longitude=? WHERE profile_id=? AND user_id=?");
+        if (!$stmt) send_json(['success' => false, 'error' => 'Query prepare failed (update profile): ' . $conn->error]);
+        $stmt->bind_param('sssssddii', $fullname, $email, $phone, $preferences, $location_address, $latitude, $longitude, $profile_id, $user_id);
+        $ok = $stmt->execute();
+        $stmt->close();
+        if ($ok) send_json(['success' => true, 'profile_id' => $profile_id]);
+        send_json(['success' => false, 'error' => 'Could not update profile']);
+    } else {
+        $stmt = $conn->prepare("INSERT INTO buyer_profiles (user_id, fullname, email, phone, preferences, location_address, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        if (!$stmt) send_json(['success' => false, 'error' => 'Query prepare failed (insert profile): ' . $conn->error]);
+        $stmt->bind_param('isssssdd', $user_id, $fullname, $email, $phone, $preferences, $location_address, $latitude, $longitude);
+        $ok = $stmt->execute();
+        $pid = $stmt->insert_id;
+        $stmt->close();
+        if ($ok) send_json(['success' => true, 'profile_id' => $pid]);
+        send_json(['success' => false, 'error' => 'Could not create profile']);
+    }
+}
+
+if ($action === 'getBuyerProfiles') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $user_id = (int)$_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT profile_id, fullname, email, phone, preferences, location_address, latitude, longitude, created_at, updated_at FROM buyer_profiles WHERE user_id = ? ORDER BY updated_at DESC");
+    if (!$stmt) send_json(['success' => false, 'error' => 'Query prepare failed (get profiles): ' . $conn->error]);
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $rows = $res->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    send_json(['success' => true, 'data' => $rows]);
+}
+
+if ($action === 'getBuyerProfile') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $pid = (int)($_POST['profile_id'] ?? 0);
+    if (!$pid) send_json(['success' => false, 'error' => 'Missing profile_id']);
+    $stmt = $conn->prepare("SELECT profile_id, fullname, email, phone, preferences, location_address, latitude, longitude, created_at, updated_at FROM buyer_profiles WHERE profile_id = ? AND user_id = ?");
+    if (!$stmt) send_json(['success' => false, 'error' => 'Query prepare failed (get profile): ' . $conn->error]);
+    $stmt->bind_param('ii', $pid, $_SESSION['user_id']);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if ($row) send_json(['success' => true, 'profile' => $row]);
+    send_json(['success' => false, 'error' => 'Profile not found']);
+}
+
+if ($action === 'deleteBuyerProfile') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $user_id = (int)$_SESSION['user_id'];
+    $pid = (int)($_POST['profile_id'] ?? 0);
+    if (!$pid) send_json(['success' => false, 'error' => 'Missing profile_id']);
+    $stmt = $conn->prepare("DELETE FROM buyer_profiles WHERE profile_id = ? AND user_id = ?");
+    $stmt->bind_param('ii', $pid, $user_id);
+    $stmt->execute();
+    $ok = $stmt->affected_rows > 0;
+    $stmt->close();
+    send_json(['success' => $ok]);
+}
+
+// ---------- GET BUYER INQUIRIES (using user_id) ----------
+if ($action === 'getBuyerInquiries') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $user_id = (int)$_SESSION['user_id'];
+
+    $sql = "SELECT bi.inquiry_id, bi.location_id, bi.seller_id, bi.inquiry_status, bi.interested_at,
+                   s.User AS seller_name, l.description AS listing_desc, bp.fullname AS profile_name
+            FROM buyer_inquiries bi
+            LEFT JOIN credentialss s ON s.ids = bi.seller_id
+            LEFT JOIN locations l ON l.location_id = bi.location_id
+            LEFT JOIN buyer_profiles bp ON bp.profile_id = bi.profile_id
+            WHERE bi.user_id = ?
+            ORDER BY bi.interested_at DESC";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) send_json(['success' => false, 'error' => 'Prepare failed: ' . $conn->error]);
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    send_json(['success' => true, 'data' => $rows]);
+}
+
+// ---------- GET NEAR SELLERS ----------
+if ($action === 'getNearSellers') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $lat = (float)($_POST['latitude'] ?? 0);
+    $lng = (float)($_POST['longitude'] ?? 0);
+    $radius = (float)($_POST['radius'] ?? 20);
+    if ($lat == 0 || $lng == 0) send_json(['success' => false, 'error' => 'Missing coordinates']);
+    $sql = "SELECT l.location_id, l.user_id, l.description, l.location_address, l.latitude, l.longitude, l.number, l.socmed, l.saved_at,
+        (6371 * ACOS( LEAST(1, COS(RADIANS(?)) * COS(RADIANS(l.latitude)) * COS(RADIANS(l.longitude) - RADIANS(?)) + SIN(RADIANS(?)) * SIN(RADIANS(l.latitude)) ) )) AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL AND l.longitude IS NOT NULL
+        HAVING distance <= ?
+        ORDER BY distance ASC LIMIT 200";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) send_json(['success' => false, 'error' => 'Query prepare failed']);
+    $stmt->bind_param('dddd', $lat, $lng, $lat, $radius);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $sellers = [];
+    while ($r = $res->fetch_assoc()) {
+        $uid = (int)$r['user_id'];
+        $u = $conn->query("SELECT ids, User FROM credentialss WHERE ids = $uid LIMIT 1")->fetch_assoc();
+        $r['seller_name'] = $u['User'] ?? 'Seller';
+        $r['distance'] = (float)$r['distance'];
+        $sellers[] = $r;
+    }
+    send_json(['success' => true, 'count' => count($sellers), 'data' => $sellers]);
+}
+
+// ---------- GET SELLER INFO ----------
+if ($action === 'getSellerInfo') {
+    if (empty($_SESSION['user_id'])) send_json(['success' => false, 'error' => 'Unauthorized']);
+    $seller_id = (int)($_POST['seller_id'] ?? 0);
+    if (!$seller_id) send_json(['success' => false, 'error' => 'Missing seller_id']);
+    $sellerRow = $conn->query("SELECT ids, User FROM credentialss WHERE ids = $seller_id LIMIT 1");
+    if (!$sellerRow || !($seller = $sellerRow->fetch_assoc())) send_json(['success' => false, 'error' => 'Seller not found']);
+    $stmt = $conn->prepare("SELECT location_id, description, socmed, number, location_address, latitude, longitude, saved_at FROM locations WHERE user_id = ? ORDER BY saved_at DESC LIMIT 100");
+    if (!$stmt) send_json(['success' => false, 'error' => 'Query prepare failed']);
+    $stmt->bind_param('i', $seller_id);
+    $stmt->execute();
+    $listings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    send_json(['success' => true, 'seller' => $seller, 'listings' => $listings]);
+}
+
+// ---------- SEND MESSAGE (using user_id, not buyer_id) ----------
+// ---------- SEND MESSAGE (with proper notifications) ----------
+if ($action === 'sendMessage') {
+    try {
+        if (empty($_SESSION['user_id'])) {
+            send_json(['success' => false, 'error' => 'Not logged in']);
+        }
+        $user_id = (int)$_SESSION['user_id'];
+        $profile_id = (int)($_POST['profile_id'] ?? 0);
+        $seller_id = (int)($_POST['seller_id'] ?? 0);
+        $location_id = (int)($_POST['location_id'] ?? 0);
+        $message = trim($_POST['message'] ?? '');
+        $buyer_info = trim($_POST['buyer_info'] ?? '');
+
+        if (!$user_id || !$seller_id || !$location_id || !$message) {
+            send_json(['success' => false, 'error' => 'Missing required fields']);
+        }
+
+        // Ensure the notifications table has all required columns
+        $conn->query("CREATE TABLE IF NOT EXISTS seller_notifications (
+            notif_id INT AUTO_INCREMENT PRIMARY KEY,
+            seller_id INT NOT NULL,
+            buyer_id INT NOT NULL,
+            inquiry_id INT NOT NULL,
+            message_summary VARCHAR(255),
+            is_read TINYINT(1) DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB");
+
+        // Check if buyer_id column exists (safety for old tables)
+        $colCheck = $conn->query("SHOW COLUMNS FROM seller_notifications LIKE 'buyer_id'");
+        if ($colCheck->num_rows == 0) {
+            $conn->query("ALTER TABLE seller_notifications ADD COLUMN buyer_id INT NOT NULL AFTER seller_id");
+        }
+
+        // Get buyer_id from buyers table using the current user_id
+        $buyer_id = 0;
+        $buyerRes = $conn->query("SELECT buyer_id FROM buyers WHERE user_id = $user_id LIMIT 1");
+        if ($buyerRes && $row = $buyerRes->fetch_assoc()) {
+            $buyer_id = (int)$row['buyer_id'];
+        } else {
+            send_json(['success' => false, 'error' => 'Buyer profile not found. Please complete the consent step first.']);
+        }
+
+        // Insert or update inquiry (as before)
+        $conn->query("CREATE TABLE IF NOT EXISTS buyer_inquiries (
+            inquiry_id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            profile_id INT DEFAULT NULL,
+            location_id INT NOT NULL,
+            seller_id INT NOT NULL,
+            inquiry_status ENUM('active','archived','contacted') DEFAULT 'active',
+            interested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_interaction DATETIME,
+            UNIQUE KEY unique_inquiry (user_id, profile_id, location_id, seller_id)
+        ) ENGINE=InnoDB");
+
+        $stmt = $conn->prepare("
+            INSERT INTO buyer_inquiries (user_id, profile_id, location_id, seller_id, last_interaction)
+            VALUES (?, ?, ?, ?, NOW())
+            ON DUPLICATE KEY UPDATE
+                inquiry_status = 'active',
+                last_interaction = NOW()
+        ");
+        if (!$stmt) send_json(['success' => false, 'error' => 'Prepare failed: ' . $conn->error]);
+        $stmt->bind_param('iiii', $user_id, $profile_id, $location_id, $seller_id);
+        if (!$stmt->execute()) send_json(['success' => false, 'error' => 'Execute failed: ' . $stmt->error]);
+        $inquiry_id = $stmt->insert_id;
+        $stmt->close();
+
+        if ($inquiry_id == 0) {
+            $sel = $conn->prepare("SELECT inquiry_id FROM buyer_inquiries WHERE user_id = ? AND profile_id = ? AND location_id = ? AND seller_id = ?");
+            $sel->bind_param('iiii', $user_id, $profile_id, $location_id, $seller_id);
+            $sel->execute();
+            $row = $sel->get_result()->fetch_assoc();
+            $inquiry_id = $row['inquiry_id'] ?? 0;
+            $sel->close();
+        }
+        if (!$inquiry_id) send_json(['success' => false, 'error' => 'Could not retrieve or create inquiry']);
+
+        // Save message
+        $conn->query("CREATE TABLE IF NOT EXISTS buyer_seller_messages (
+            message_id INT AUTO_INCREMENT PRIMARY KEY,
+            inquiry_id INT NOT NULL,
+            sender_type ENUM('buyer','seller') NOT NULL,
+            message_content LONGTEXT NOT NULL,
+            is_read TINYINT(1) DEFAULT 0,
+            sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (inquiry_id) REFERENCES buyer_inquiries(inquiry_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB");
+
+        $fullMsg = $buyer_info ? "BUYER CONTACT:\n$buyer_info\n\nMESSAGE:\n$message" : $message;
+        $msgStmt = $conn->prepare("INSERT INTO buyer_seller_messages (inquiry_id, sender_type, message_content) VALUES (?, 'buyer', ?)");
+        if (!$msgStmt) send_json(['success' => false, 'error' => 'Message prepare failed: ' . $conn->error]);
+        $msgStmt->bind_param('is', $inquiry_id, $fullMsg);
+        if (!$msgStmt->execute()) send_json(['success' => false, 'error' => 'Message execute failed: ' . $msgStmt->error]);
+        $msgStmt->close();
+
+        // Insert notification for seller
+        $summary = substr($message, 0, 200);
+        $notif = $conn->prepare("INSERT INTO seller_notifications (seller_id, buyer_id, inquiry_id, message_summary) VALUES (?, ?, ?, ?)");
+        if (!$notif) send_json(['success' => false, 'error' => 'Notif prepare failed: ' . $conn->error]);
+        $notif->bind_param('iiis', $seller_id, $buyer_id, $inquiry_id, $summary);
+        if (!$notif->execute()) send_json(['success' => false, 'error' => 'Notif insert failed: ' . $notif->error]);
+        $notif->close();
+
+        // Optional: increment interested counter on location
+        $conn->query("UPDATE locations SET interested_buyers = IFNULL(interested_buyers,0) + 1 WHERE location_id = $location_id");
+
+        send_json(['success' => true, 'inquiry_id' => $inquiry_id]);
+
+    } catch (Exception $e) {
+        send_json(['success' => false, 'error' => 'Exception: ' . $e->getMessage()]);
+    }
+}
+
+// Default fallback
+send_json(['success' => false, 'error' => 'Invalid action']);
+?>
