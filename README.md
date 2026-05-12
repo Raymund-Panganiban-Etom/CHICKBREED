@@ -9,7 +9,7 @@
 
 ## 🖥️ Desktop interface
 
-| Desktop views |
+| NEW UI/UX Desktop views |
 |---------------|
 | <img src="https://github.com/user-attachments/assets/29eb42fe-ca4b-41d4-ac84-535409bbb99a" width="600"> |
 | <img src="https://github.com/user-attachments/assets/4001baf6-2d1b-45fa-ada3-1e67e4b91e95" width="600"> |
@@ -18,7 +18,7 @@
 | <img src="https://github.com/user-attachments/assets/4e7ddb99-d0a0-4202-879c-58ffb5049ff8" width="600"> |
 | <img src="https://github.com/user-attachments/assets/159b84c3-73a8-4f6f-8937-bfbd99551715" width="600"> |
 
-## 🚀 Final polished screenshots
+## 🚀 OLD UI/UX screenshots
 
 | | |
 |---|---|
