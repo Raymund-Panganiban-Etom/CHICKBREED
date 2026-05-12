@@ -1,0 +1,226 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+    background: linear-gradient(135deg, #fff4e0 0%, #ffebcc 50%, #ffe0b5 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.login-container {
+    display: flex;
+    flex-wrap: wrap;
+    background: white;
+    border-radius: 2rem;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease;
+}
+
+/* Brand image side */
+.brand-image {
+    flex: 1;
+    background: linear-gradient(145deg, #C62828, #F9A825);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    min-width: 280px;
+}
+
+.brand-image img {
+    max-width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 1rem;
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.2));
+}
+
+/* Form card side */
+.login-card {
+    flex: 1;
+    padding: 2.5rem;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 300px;
+}
+
+.login-card h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #C62828;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+.subtitle {
+    color: #b34e1a;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+/* Error message */
+.error-message {
+    background: #FFECB3;
+    border-left: 4px solid #C62828;
+    color: #B71C1C;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Form inputs */
+.input-group {
+    margin-bottom: 1.25rem;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #5D2906;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.3px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    border: 1.5px solid #FFE0B2;
+    border-radius: 60px;
+    background: #FEF9F0;
+    transition: all 0.2s;
+    outline: none;
+    font-family: inherit;
+}
+
+.input-group input:focus {
+    border-color: #F9A825;
+    box-shadow: 0 0 0 3px rgba(249, 168, 37, 0.2);
+    background: white;
+}
+
+/* Password toggle */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 3rem;
+}
+
+.password-wrapper button {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #C62828;
+    padding: 0;
+    line-height: 1;
+}
+
+/* Login button */
+.login-btn {
+    width: 100%;
+    background: linear-gradient(95deg, #C62828, #F9A825);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-top: 0.5rem;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(198, 40, 40, 0.4);
+    background: linear-gradient(95deg, #B71C1C, #F57F17);
+}
+
+/* Register link */
+.register-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: #b34e1a;
+}
+
+.register-link a {
+    color: #C62828;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.25rem;
+    transition: color 0.2s;
+}
+
+.register-link a:hover {
+    color: #F9A825;
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 850px) {
+    .login-container {
+        flex-direction: column;
+        border-radius: 1.5rem;
+    }
+    .brand-image {
+        padding: 2rem;
+        order: 1;
+    }
+    .brand-image img {
+        max-height: 200px;
+    }
+    .login-card {
+        order: 2;
+        padding: 2rem;
+    }
+    .login-card h2 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 1rem;
+    }
+    .login-card {
+        padding: 1.5rem;
+    }
+    .input-group input {
+        padding: 0.7rem 1rem;
+    }
+    .login-btn {
+        padding: 0.7rem;
+    }
+}

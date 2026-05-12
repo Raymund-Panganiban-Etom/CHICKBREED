@@ -1,0 +1,192 @@
+    /* ------------------------------
+            GLOBAL & RESET
+        ------------------------------ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #fff5eb 0%, #fff0e0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* ------------------------------
+            MAIN CARD
+        ------------------------------ */
+        .dashboard {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+            overflow: hidden;
+            padding: 2rem 2rem 2.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .dashboard:hover {
+            transform: scale(1.01);
+        }
+
+        /* ------------------------------
+            HEADER & WELCOME
+        ------------------------------ */
+        .welcome {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #C62828, #F9A825);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.01em;
+        }
+
+        .welcome p {
+            font-size: 1.2rem;
+            color: #b34e1a;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .username-badge {
+            background: #FFF3E0;
+            display: inline-block;
+            padding: 0.3rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #C62828;
+            margin-top: 0.75rem;
+            border: 1px solid #FFD54F;
+        }
+
+        /* ------------------------------
+            ACTION BUTTONS (SELL / BUY)
+        ------------------------------ */
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2.5rem 0 1.8rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 160px;
+            padding: 1rem 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Sell button – Red theme */
+        .action-btn.sell {
+            background: #C62828;
+            color: white;
+            box-shadow: 0 8px 18px rgba(198, 40, 40, 0.3);
+        }
+
+        .action-btn.sell:hover {
+            background: #B71C1C;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px rgba(198, 40, 40, 0.4);
+        }
+
+        /* Buy button – Yellow theme */
+        .action-btn.buy {
+            background: #F9A825;
+            color: #5D2906;
+            box-shadow: 0 8px 18px rgba(249, 168, 37, 0.3);
+        }
+
+        .action-btn.buy:hover {
+            background: #F57F17;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px rgba(249, 168, 37, 0.4);
+        }
+
+        /* ------------------------------
+            LOGOUT BUTTON
+        ------------------------------ */
+        .logout-wrapper {
+            text-align: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #FFE0B2;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid #FFCC80;
+            padding: 0.7rem 2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #C62828;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #ffffffcc;
+            backdrop-filter: blur(4px);
+        }
+
+        .logout-btn:hover {
+            background: #FFECB3;
+            border-color: #F9A825;
+            color: #B71C1C;
+        }
+
+        /* ------------------------------
+            RESPONSIVE
+        ------------------------------ */
+        @media (max-width: 550px) {
+            body {
+                padding: 1rem;
+            }
+            .dashboard {
+                padding: 1.5rem;
+            }
+            .welcome h1 {
+                font-size: 1.8rem;
+            }
+            .action-btn {
+                min-width: 120px;
+                padding: 0.8rem 0;
+                font-size: 1.1rem;
+            }
+            .actions {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }

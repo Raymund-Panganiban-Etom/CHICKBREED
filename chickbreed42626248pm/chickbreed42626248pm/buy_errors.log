@@ -1,0 +1,280 @@
+[06-May-2026 17:09:13 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'chickacc.buyer_consent_logs' doesn't exist in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:79
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(79): mysqli->prepare('INSERT INTO buy...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 79
+[06-May-2026 17:10:38 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'chickacc.buyer_consent_logs' doesn't exist in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:79
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(79): mysqli->prepare('INSERT INTO buy...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 79
+[06-May-2026 17:31:52 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`chickacc`.`buyers`, CONSTRAINT `buyers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `credentialss` (`ids`) ON DELETE CASCADE) in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:101
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(101): mysqli_stmt->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 101
+[06-May-2026 17:31:57 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`chickacc`.`buyers`, CONSTRAINT `buyers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `credentialss` (`ids`) ON DELETE CASCADE) in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:101
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(101): mysqli_stmt->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 101
+[06-May-2026 17:43:50 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:48
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(48): mysqli->query('DROP TABLE IF E...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 48
+[06-May-2026 17:43:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot delete or update a parent row: a foreign key constraint fails in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:48
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(48): mysqli->query('DROP TABLE IF E...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 48
+[08-May-2026 03:51:32 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:51:41 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:51:50 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:51:52 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:52:11 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:53:51 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:54:04 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:55:25 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:57:33 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:57:49 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:58:04 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:58:35 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 03:58:36 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:159
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(159): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 159
+[08-May-2026 04:15:02 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:179
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(179): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 179
+[08-May-2026 04:15:09 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:179
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(179): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 179
+[08-May-2026 04:15:32 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:179
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(179): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 179
+[08-May-2026 04:15:35 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:179
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(179): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 179
+[08-May-2026 04:17:27 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'AS distance
+        FROM locations l
+        WHERE l.latitude IS NOT NULL A...' at line 2 in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:179
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(179): mysqli->prepare('SELECT l.locati...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 179
+[08-May-2026 04:19:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'Email' in 'field list' in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:203
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(203): mysqli->query('SELECT ids, Use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 203
+[08-May-2026 04:20:16 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'Email' in 'field list' in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:203
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(203): mysqli->query('SELECT ids, Use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 203
+[08-May-2026 04:21:15 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'Email' in 'field list' in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:203
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(203): mysqli->query('SELECT ids, Use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 203
+[08-May-2026 04:21:23 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'Email' in 'field list' in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:203
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php(203): mysqli->query('SELECT ids, Use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 203
+[08-May-2026 09:51:35 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:202
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 202
+[08-May-2026 09:51:42 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:202
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 202
+[08-May-2026 09:51:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:202
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 202
+[08-May-2026 09:52:04 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:263
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 263
+[08-May-2026 09:52:05 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:263
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 263
+[08-May-2026 09:52:06 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:263
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 263
+[08-May-2026 09:52:06 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:263
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 263
+[08-May-2026 09:52:07 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:263
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 263
+[08-May-2026 09:52:08 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:263
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 263
+[08-May-2026 09:52:22 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:385
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 385
+[08-May-2026 09:54:18 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:385
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 385
+[08-May-2026 09:55:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:263
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 263
+[08-May-2026 12:29:37 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:154
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 154
+[08-May-2026 12:29:55 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:154
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 154
+[08-May-2026 13:28:02 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:154
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 154
+[08-May-2026 13:28:04 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:154
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 154
+[08-May-2026 13:28:06 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:154
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 154
+[08-May-2026 13:28:07 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:154
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 154
+[08-May-2026 14:22:12 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:121
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 121
+[08-May-2026 14:22:20 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:121
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 121
+[08-May-2026 14:27:12 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:121
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 121
+[08-May-2026 14:27:40 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:121
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 121
+[08-May-2026 16:32:13 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:323
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 323
+[08-May-2026 16:32:29 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:323
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 323
+[08-May-2026 17:20:38 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:404
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 404
+[08-May-2026 17:20:55 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php:404
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\buy_handler.php on line 404
