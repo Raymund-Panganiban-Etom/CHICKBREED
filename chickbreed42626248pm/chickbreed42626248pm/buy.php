@@ -63,6 +63,9 @@ $logged_user_id = (int)$_SESSION['user_id'];
 <body>
 <div class="container">
   <h1>🐔 Find Local Sellers Near You</h1>
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+    <a href="home.php" class="btn" style="background:#F9A825; color:#5D2906; text-decoration:none;"><i class="fas fa-home"></i> Back to Home</a>
+</div>
   <div class="step-indicator">
     <div class="step active" id="step1">1. Your Info</div>
     <div class="step" id="step2">2. Consent</div>

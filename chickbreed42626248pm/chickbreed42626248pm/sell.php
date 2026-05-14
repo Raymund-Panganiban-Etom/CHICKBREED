@@ -382,6 +382,10 @@ img, svg, iframe {
       <h2 style="margin:0">Your Items</h2>
       <div class="small">Click the plus to add a new entry. Entries are stored with your consent.</div>
     </div>
+
+ <a href="home.php" class="btn" style="background:#F9A825; color:#5D2906; text-decoration:none; margin-left:auto;"><i class="fas fa-home"></i> Back to Home</a>
+   
+
   </div>
 
   <div class="form-card" id="formCard" aria-hidden="true">

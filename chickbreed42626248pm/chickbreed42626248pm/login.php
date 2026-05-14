@@ -7,7 +7,7 @@ if (isset($_POST["login"])) {
         $username = $_POST["username"];
         $password = $_POST["password"];
 
-        $stmt = $connection->prepare("SELECT Ids, User, Pass FROM credentialss WHERE User = ?");
+        $stmt = $connection->prepare("SELECT Ids, User, Pass, is_admin FROM credentialss WHERE User = ?");
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -16,7 +16,14 @@ if (isset($_POST["login"])) {
             if (password_verify($password, $row["Pass"])) {
                 $_SESSION['user_id']   = $row['Ids'];
                 $_SESSION['username']  = $row['User'];
-                header("Location: home.php");
+                $_SESSION['is_admin']  = (int)$row['is_admin'];
+
+                // Redirect based on admin status
+                if ($_SESSION['is_admin'] == 1) {
+                    header("Location: admin.php");
+                } else {
+                    header("Location: home.php");
+                }
                 exit;
             } else {
                 $error = "Invalid password.";
