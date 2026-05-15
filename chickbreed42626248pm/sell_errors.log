@@ -1,0 +1,15 @@
+[15-May-2026 21:27:44 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: No connection could be made because the target machine actively refused it in C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php:10
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php(10): mysqli->__construct('localhost', 'root', Object(SensitiveParameterValue), 'Chickacc')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php on line 10
+[15-May-2026 21:28:44 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: No connection could be made because the target machine actively refused it in C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php:10
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php(10): mysqli->__construct('localhost', 'root', Object(SensitiveParameterValue), 'Chickacc')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php on line 10
+[15-May-2026 21:29:17 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: No connection could be made because the target machine actively refused it in C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php:10
+Stack trace:
+#0 C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php(10): mysqli->__construct('localhost', 'root', Object(SensitiveParameterValue), 'Chickacc')
+#1 {main}
+  thrown in C:\xampp\htdocs\chickbreed42626248pm\sell_handler.php on line 10

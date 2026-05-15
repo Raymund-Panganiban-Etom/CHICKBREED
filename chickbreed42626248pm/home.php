@@ -1,62 +1,84 @@
 <?php
+session_start();
 
-// session = SGB used to store information on a user to be used  across 
-// mulitple  pages. A user  is assigned a swssion - id, ex. login credentials
-
-
-
-session_start(); // WE CAN USE IT IN LOG IN AND WELCOME PAGE APPEARING THE USERNAME THAT ENTER OF USER IN REGISTRATION!!!!!!!!!!!! IN  WELCOME OR HOMEPAGE 
-if(isset($_POST["Logout"])){
-    session_destroy(); // To erase session in entering credentials
+// Redirect to login if user is not logged in
+if (!isset($_SESSION['username'])) {
     header("Location: login.php");
+    exit;
 }
 
-// $_SESSION["username"] = "Raymund";
-// $_SESSION["password"] = "Ray123";
+$name = htmlspecialchars($_SESSION['username']); // prevent XSS
 
-$name = $_SESSION["username"] . "<br>";
+// CSRF token
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
-echo "Welcome $name!";
+// Handle logout
+if (isset($_POST['Logout'])) {
+    session_destroy();
+    header("Location: login.php");
+    exit;
+}
 
-if(isset($_POST["Sell"])){
+// Handle Sell / Buy navigation
+if (isset($_POST['Sell'])) {
     header("Location: sell.php");
+    exit;
 }
-if(isset($_POST["Buy"])){
+if (isset($_POST['Buy'])) {
     header("Location: buy.php");
+    exit;
 }
-
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Chickbreed – Dashboard</title>
     <link rel="stylesheet" href="home.css">
-    <title>Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
 </head>
 <body>
-    This is The Home page<br>
-    <!-- <a href="homes.php">This goes to the home page</a><br> -->
-     <form action="home.php" method="post">
-        <input type="submit" name="Logout" value="Logout" class="Logout liquids">
+    <div class="dashboard">
+        <div class="welcome">
+            <h1>🐓 CHICKBREED</h1>
+            <p>Your local poultry marketplace</p>
+            <div class="username-badge">
+                👋 Welcome, <?php echo $name; ?>
+            </div>
+        </div>
 
-        <div class="f">
-            <form action="home.php" method="post">
-                <input type="submit" name="Sell" value="Sell" class="Sell liquid">
-                <input type="submit" name="Buy" value="Buy" class="Buy liquid">
+        <form method="post" action="">
+            <div class="actions">
+                <button type="submit" name="Sell" class="action-btn sell">
+                    🛒 Sell
+                </button>
+                <button type="submit" name="Buy" class="action-btn buy">
+                    🔍 Buy
+                </button>
+            </div>
+            <div class="logout-wrapper">
+                <button type="submit" name="Logout" class="logout-btn">
+                    🚪 Logout
+                </button>
+            </div>
+        </form>
+
+        <div class="feedback-section">
+            <h3><i class="fas fa-comment-dots"></i>Feedback</h3>
+            <form id="feedbackForm">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                <textarea id="feedbackMessage" rows="3" placeholder="Share your suggestions, report issues, or ask questions..." required></textarea>
+                <button type="submit"><i class="fas fa-paper-plane"></i> Send Feedback</button>
+                <div id="feedbackStatus" class="status"></div>
             </form>
         </div>
-     </form>
+    </div>
 
-
+<script src="home.js"></script>
 </body>
 </html>
-
-<?php
-
-
-
-
-?> 

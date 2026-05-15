@@ -11,74 +11,23 @@ $logged_user_id = (int)$_SESSION['user_id'];
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes" />
-<title>Find Sellers Near You – FarmConnect</title>
+<title>Find Sellers Near You – Chickbreed</title>
+<link rel="stylesheet" href="buy.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<style>
-  *{box-sizing:border-box}
-  body{font-family:Inter,Segoe UI,Arial; background:#f6f8fb; margin:0; padding:20px; display:flex;justify-content:center;}
-  .container{width:100%;max-width:1000px;}
-  h1{color:#222;text-align:center; font-size:clamp(1.5rem,5vw,2.5rem);}
-  .section{background:#fff;padding:20px;margin:16px 0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
-  .hidden{display:none;}
-  .btn{background:#0b78d1;color:#fff;padding:12px 20px;border-radius:8px;border:0;cursor:pointer;font-weight:600;transition:0.2s;display:inline-block;text-align:center;min-height:44px;min-width:44px;}
-  .btn:hover{background:#0960a3;}
-  .btn.secondary{background:#e9eef8;color:#0b78d1;border:1px solid #cbd5e1;}
-  .btn.success{background:#51cf66;}
-  .btn.success:hover{background:#40c057;}
-  .row{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;}
-  label{display:block;font-weight:600;margin-top:12px;color:#222;}
-  input,textarea,select{width:100%;padding:10px;border:1px solid #e2e6ef;border-radius:8px;font-size:16px;}
-  .status{padding:12px;border-radius:8px;margin:12px 0;}
-  .status.loading{background:#e7f5ff;color:#0c63e4;}
-  .status.success{background:#d3f9d8;color:#2f7c31;}
-  .status.error{background:#ffe0e0;color:#d32f2f;}
-  .coords-display{background:#f0f2f6;padding:12px;border-radius:8px;margin:12px 0;font-size:13px;}
-  .map-container{height:450px;border-radius:12px;margin:16px 0;overflow:hidden;}
-  .seller-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:16px;}
-  .seller-card{background:#fff;border:1px solid #e2e6ef;border-radius:12px;padding:16px;cursor:pointer;transition:0.2s;}
-  .seller-card:hover{box-shadow:0 6px 14px rgba(0,0,0,0.1);}
-  .item{background:#fff;padding:12px;border-radius:10px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 6px 18px rgba(2,6,23,.04);flex-wrap:wrap;}
-  .thumb{width:96px;height:72px;border-radius:6px;background:#f0f2f6;object-fit:cover;border:1px solid #eee;max-width:100%;}
-  .meta{flex:1;min-width:150px;}
-  .meta h4{margin:0 0 6px 0;font-size:16px}
-  .meta p{margin:0;color:#666;font-size:13px}
-  .actions{display:flex;flex-direction:row;gap:6px;flex-wrap:wrap;}
-  .remove{background:#ff6b6b;color:#fff;border:0;padding:6px 8px;border-radius:6px;cursor:pointer}
-  .distance{color:#0b78d1;font-weight:bold;}
-  .step-indicator{display:flex;gap:8px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
-  .step{padding:8px 16px;border-radius:40px;background:#e9eef8;color:#0b78d1;font-size:clamp(12px,4vw,16px);}
-  .step.active{background:#0b78d1;color:#fff;}
-  .step.completed{background:#51cf66;color:#fff;}
-  #modalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;z-index:50}
-  .modal-active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:720px;max-width:96%;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-  .consent-text{max-height:300px;overflow-y:auto;background:#f9fafb;padding:16px;border-radius:12px;font-size:14px;line-height:1.5;}
-  .checkbox-group{display:flex;align-items:center;gap:8px;margin-top:16px;}
-  /* Responsive */
-  @media (max-width:768px){
-    .container{padding:0 12px;}
-    .row{flex-direction:column;}
-    .map-container{height:300px;}
-    .btn{width:100%;}
-    .seller-grid{grid-template-columns:1fr;}
-    .thumb{width:72px;height:56px;}
-    .actions{justify-content:flex-end;}
-    .step{padding:6px 12px;}
-  }
-  @media (min-width:769px) and (max-width:1024px){
-    .seller-grid{grid-template-columns:repeat(2,1fr);}
-    .map-container{height:380px;}
-  }
-  button, .btn, .remove{min-height:44px;min-width:44px;}
-  img,svg,iframe{max-width:100%;height:auto;}
-</style>
+
 </head>
 <body>
 <div class="container">
+  <input type="hidden" id="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
   <h1>🐔 Find Local Sellers Near You</h1>
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+    <a href="home.php" class="btn" style="background:#F9A825; color:#5D2906; text-decoration:none;"><i class="fas fa-home"></i> Back to Home</a>
+    <input type="hidden" id="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+</div>
   <div class="step-indicator">
     <div class="step active" id="step1">1. Your Info</div>
     <div class="step" id="step2">2. Consent</div>
@@ -86,7 +35,7 @@ $logged_user_id = (int)$_SESSION['user_id'];
     <div class="step" id="step4">4. Contact</div>
   </div>
 
-  <!-- Step 1: Buyer info -->
+  <!-- Step 1 -->
   <div class="section" id="buyerFormSection">
     <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;">
       <h2>Your Information (RA 10173 compliant)</h2>
@@ -127,12 +76,11 @@ $logged_user_id = (int)$_SESSION['user_id'];
     <h2>Data Privacy Act Consent (RA 10173)</h2>
     <div class="consent-text">
       <p><strong>Republic Act No. 10173 – Data Privacy Act of 2012</strong></p>
-      <p>By proceeding, you explicitly grant your consent to the collection, processing, and storage of the personal data you provided (including full name, email, phone number, and precise GPS location) for the sole purpose of connecting you with nearby sellers of chicken/poultry products.</p>
-      <p><strong>Your rights:</strong> Right to access, correct, or delete your data; right to withdraw consent; right to object to processing.</p>
+      <p>By proceeding, you explicitly grant your consent to the collection, processing, and storage of your personal data (name, email, phone, location) for connecting you with nearby sellers.</p>
     </div>
     <div class="checkbox-group">
       <input type="checkbox" id="termsCheck">
-      <label for="termsCheck">I have read and agree to the collection and processing of my personal data as described.</label>
+      <label for="termsCheck">I have read and agree.</label>
     </div>
     <div id="termsLocationDisplay" class="coords-display" style="display:none">
       <p>📍 Your location: <span id="termsLat">-</span>, <span id="termsLng">-</span></p>
@@ -143,14 +91,15 @@ $logged_user_id = (int)$_SESSION['user_id'];
     </div>
   </div>
 
-  <!-- Step 3: Map and sellers -->
+  <!-- Step 3: Map and seller list with enhanced search -->
   <div class="section hidden" id="sellersMapSection">
     <h2>Nearby Sellers (within <span id="radiusKmDisplay">20</span> km)</h2>
     <div id="sellersCount" class="status" style="display:none"></div>
     <div class="row">
-      <input type="search" id="searchInput" placeholder="Search by product, address, or username" style="flex:2;">
+      <input type="search" id="searchInput" placeholder="🔍 Search by breed, product, or location (e.g., leghorn)" style="flex:2;">
       <input type="number" id="radiusInput" value="20" min="1" max="200" style="width:100px;">
-      <button class="btn" id="refreshSellersBtn">Search</button>
+      <button class="btn" id="applyFilterBtn">Filter</button>
+      <button class="btn secondary" id="refreshSellersBtn">Refresh List</button>
       <button class="btn secondary" id="editInfoBtn">Edit My Info</button>
     </div>
     <div class="map-container" id="mapContainer"><div id="mapView" style="height:100%;"></div></div>
@@ -187,16 +136,19 @@ $logged_user_id = (int)$_SESSION['user_id'];
 
 <script>
 const LOGGED_USER_ID = <?php echo json_encode($logged_user_id); ?>;
+const csrfToken = document.getElementById('csrf_token').value;
 let currentBuyer = { user_id: LOGGED_USER_ID, buyer_id: null };
 let currentProfile = null;
 let currentCoords = null;
 let currentSeller = null;
 let map = null;
 let allSellers = [];
+let filteredSellers = [];
 let selectedListingId = 0;
 let inquiryPollInterval = null;
 let modalOpen = false;
 
+// Helper API request
 async function apiRequest(formData) {
   const res = await fetch('buy_handler.php', { method: 'POST', body: formData });
   const text = await res.text();
@@ -262,6 +214,8 @@ document.getElementById('acceptTermsBtn').onclick = async function() {
   if(stored) Object.assign(currentBuyer, JSON.parse(stored));
   if(!currentBuyer.user_id) return alert('User ID missing');
   const fd = new FormData();
+  // Append CSRF token
+  fd.append('csrf_token', csrfToken);
   fd.append('action','saveBuyer');
   fd.append('fullname', currentBuyer.fullname);
   fd.append('email', currentBuyer.email);
@@ -283,7 +237,7 @@ document.getElementById('acceptTermsBtn').onclick = async function() {
       pfd.append('latitude',currentBuyer.latitude??''); pfd.append('longitude',currentBuyer.longitude??'');
       const pres = await apiRequest(pfd);
       if(pres.success){ const gfd=new FormData(); gfd.append('action','getBuyerProfile'); gfd.append('profile_id',pres.profile_id);
-        const gres=await apiRequest(gfd); if(gres.success) currentProfile=gres.profile; }
+        const gres=await apiRequest(gfd); if(gres.success) currentProfile = gres.profile; }
       await loadNearbySellers();
       await loadProfiles();
       switchSection('termsSection','sellersMapSection',3);
@@ -294,24 +248,46 @@ document.getElementById('acceptTermsBtn').onclick = async function() {
   finally { this.disabled=false; this.textContent='Accept & Find Sellers →'; }
 };
 
+// ---------- LOAD SELLERS FROM API ----------
 async function loadNearbySellers(){
   if(!currentBuyer.latitude || !currentBuyer.longitude){ document.getElementById('sellersCount').innerHTML='<div class="status error">Location missing</div>'; return; }
-  document.getElementById('sellersCount').innerHTML='<div class="status loading">Searching...</div>';
+  document.getElementById('sellersCount').innerHTML='<div class="status loading">Searching for sellers...</div>';
   const radius = parseFloat(document.getElementById('radiusInput').value||20);
   const fd = new FormData(); fd.append('action','getNearSellers'); fd.append('latitude',currentBuyer.latitude); fd.append('longitude',currentBuyer.longitude); fd.append('radius',radius);
   const data = await apiRequest(fd);
   if(data.success){
-    document.getElementById('sellersCount').innerHTML = `<div class="status success">✅ Found ${data.count} seller(s)</div>`;
+    document.getElementById('sellersCount').innerHTML = `<div class="status success">✅ Found ${data.count} seller(s) near you</div>`;
     allSellers = data.data||[];
-    renderMap(allSellers);
-    renderSellerCards(allSellers);
-  } else document.getElementById('sellersCount').innerHTML = `<div class="status error">❌ ${data.error}</div>`;
+    applyFilters(); // apply current search/radius filter
+  } else {
+    document.getElementById('sellersCount').innerHTML = `<div class="status error">❌ ${data.error}</div>`;
+  }
 }
 
-function renderMap(sellers){
+// ---------- FILTER SELLERS BASED ON SEARCH TEXT AND RADIUS ----------
+function applyFilters() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  const radius = parseFloat(document.getElementById('radiusInput').value || 20);
+  
+  filteredSellers = allSellers.filter(seller => {
+    // filter by distance (already from API, but we also have radius input)
+    if (seller.distance > radius) return false;
+    if (searchTerm === "") return true;
+    // search in description, location_address, seller_name, socmed, number
+    const haystack = (seller.description + " " + (seller.location_address||"") + " " + (seller.seller_name||"") + " " + (seller.socmed||"") + " " + (seller.number||"")).toLowerCase();
+    return haystack.includes(searchTerm);
+  });
+  
+  renderMap(filteredSellers);
+  renderSellerCards(filteredSellers);
+  document.getElementById('sellersCount').innerHTML = `<div class="status success">✅ Showing ${filteredSellers.length} of ${allSellers.length} seller(s)</div>`;
+}
+
+// ---------- RENDER MAP ----------
+function renderMap(sellers) {
   if(map) map.remove();
   if(!currentBuyer.latitude) return;
-  map = L.map('mapView').setView([currentBuyer.latitude, currentBuyer.longitude],12);
+  map = L.map('mapView').setView([currentBuyer.latitude, currentBuyer.longitude], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   L.marker([currentBuyer.latitude, currentBuyer.longitude]).addTo(map).bindPopup('📌 You');
   const cluster = L.markerClusterGroup();
@@ -325,34 +301,68 @@ function renderMap(sellers){
 }
 window.addEventListener('resize',()=>{ if(map) map.invalidateSize(); });
 
+// ---------- RENDER SELLER CARDS ----------
 function renderSellerCards(sellers){
   const grid = document.getElementById('sellersGrid'); grid.innerHTML='';
+  if(sellers.length===0){
+    grid.innerHTML = '<div class="status warning">No sellers match your search. Try different keywords or increase radius.</div>';
+    return;
+  }
   sellers.forEach(s=>{
     const card = document.createElement('div'); card.className='seller-card';
-    card.innerHTML = `<h3>${escapeHtml(s.description)}</h3><div class="distance">🚗 ${s.distance.toFixed(1)} km</div><p>📍 ${escapeHtml(s.location_address||'')}</p><div class="row"><button class="btn secondary" onclick="viewSellerDetail(${s.user_id})">Details</button><button class="btn success" onclick="viewSellerDetail(${s.user_id})">Contact</button></div>`;
+    card.innerHTML = `
+      <h3>${escapeHtml(s.description)}</h3>
+      <div class="distance">🚗 ${s.distance.toFixed(1)} km away</div>
+      <p>📍 ${escapeHtml(s.location_address||'No address')}</p>
+      <div class="row"><button class="btn secondary" onclick="viewSellerDetail(${s.user_id})">Details</button><button class="btn success" onclick="viewSellerDetail(${s.user_id})">Contact</button></div>
+    `;
     grid.appendChild(card);
   });
 }
 
+// ---------- OTHER FUNCTIONS (profiles, inquiries, messaging) unchanged but referenced ----------
 async function loadProfiles(){
-  const fd = new FormData(); fd.append('action','getBuyerProfiles');
+  const fd = new FormData(); 
+  fd.append('action','getBuyerProfiles');
+   fd.append('csrf_token', document.getElementById('csrf_token').value);
   const data = await apiRequest(fd);
   if(data.success) renderProfilesList(data.data||[]);
 }
-function renderProfilesList(list){
-  const container = document.getElementById('profilesList'); container.innerHTML='';
-  if(!list.length){ container.innerHTML='<div class="small">No saved profiles.</div>'; return; }
-  list.forEach(p=>{
-    const div = document.createElement('div'); div.className='item';
-    div.innerHTML = `<div class="thumb" style="width:48px;height:48px;background:#f0f2f6;display:flex;align-items:center;justify-content:center">👤</div>
-      <div class="meta"><h4>${escapeHtml(p.fullname)}</h4><p>${escapeHtml(p.email)} | ${escapeHtml(p.phone)}</p><p>${escapeHtml(p.location_address||'')}</p></div>
-      <div class="actions"><button class="btn secondary" data-id="${p.profile_id}">Use</button><button class="btn" data-edit="${p.profile_id}">Edit</button><button class="remove" data-del="${p.profile_id}">Delete</button></div>`;
-    div.querySelector('[data-id]')?.addEventListener('click', ()=>useProfile(p.profile_id));
-    div.querySelector('[data-edit]')?.addEventListener('click', ()=>editProfile(p.profile_id));
-    div.querySelector('[data-del]')?.addEventListener('click', async ()=>{
-      if(!confirm('Delete?')) return;
-      const fd=new FormData(); fd.append('action','deleteBuyerProfile'); fd.append('profile_id',p.profile_id);
-      await apiRequest(fd); loadProfiles();
+function renderProfilesList(list) {
+  const container = document.getElementById('profilesList');
+  container.innerHTML = '';
+  if (!list.length) {
+    container.innerHTML = '<div class="small">No saved profiles.</div>';
+    return;
+  }
+  list.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `
+      <div class="thumb" style="width:48px;height:48px;background:#f0f2f6;display:flex;align-items:center;justify-content:center">👤</div>
+      <div class="meta">
+        <h4>${escapeHtml(p.fullname)}</h4>
+        <p>${escapeHtml(p.email)} | ${escapeHtml(p.phone)}</p>
+        <p>${escapeHtml(p.location_address || '')}</p>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" data-id="${p.profile_id}">Use</button>
+        <button class="btn" data-edit="${p.profile_id}">Edit</button>
+        <button class="btn-delete-profile" data-del="${p.profile_id}"><i class="fas fa-trash"></i> Delete</button>
+      </div>
+    `;
+    // attach event listeners (same as before)
+    div.querySelector('[data-id]')?.addEventListener('click', () => useProfile(p.profile_id));
+    div.querySelector('[data-edit]')?.addEventListener('click', () => editProfile(p.profile_id));
+    div.querySelector('[data-del]')?.addEventListener('click', async () => {
+      if (!confirm('Delete this profile?')) return;
+      const fd = new FormData();
+      fd.append('action', 'deleteBuyerProfile');
+      fd.append('profile_id', p.profile_id);
+      // also append CSRF token if you've added it
+      fd.append('csrf_token', document.getElementById('csrf_token')?.value || '');
+      await apiRequest(fd);
+      loadProfiles();
     });
     container.appendChild(div);
   });
@@ -463,15 +473,24 @@ document.getElementById('messageForm').onsubmit = async (e) => {
 };
 document.getElementById('backToSellersBtn').onclick = ()=> switchSection('sellerDetailSection','sellersMapSection',3);
 document.getElementById('backToTermsBtn').onclick = ()=> switchSection('sellersMapSection','termsSection',2);
-document.getElementById('refreshSellersBtn').onclick = loadNearbySellers;
+document.getElementById('applyFilterBtn').onclick = applyFilters;
+document.getElementById('refreshSellersBtn').onclick = ()=>{
+  loadNearbySellers();
+};
 document.getElementById('refreshInquiriesBtn').onclick = loadBuyerInquiries;
-document.getElementById('headerSearchBtn')?.addEventListener('click', async () => {
-  const rad = parseFloat(document.getElementById('headerRadiusInput').value||20);
-  document.getElementById('radiusInput').value = rad;
-  await loadNearbySellers();
-  switchSection('buyerFormSection','sellersMapSection',3);
-});
-
+// live search as user types (optional, but we keep both)
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('radiusInput').addEventListener('change', applyFilters);
+// header search (if exists) - integrate
+const headerSearchInput = document.getElementById('headerSearchInput');
+if(headerSearchInput){
+  headerSearchInput.addEventListener('keypress', (e)=>{
+    if(e.key==='Enter'){
+      document.getElementById('searchInput').value = headerSearchInput.value;
+      applyFilters();
+    }
+  });
+}
 async function loadBuyerInquiries(){
   if(!currentProfile) return;
   const fd = new FormData(); fd.append('action','getBuyerInquiries'); fd.append('profile_id',currentProfile.profile_id);
@@ -487,24 +506,43 @@ async function loadBuyerInquiries(){
     });
   }
 }
-
-// Initial load
-(async ()=>{
+// initial load
+(async () => {
   try {
-    const fd = new FormData(); fd.append('action','getBuyer');
+    const fd = new FormData();
+    fd.append('action', 'getBuyer');
     const data = await apiRequest(fd);
-    if(data.success){
+    if (data.success) {
       currentBuyer.buyer_id = data.buyer.buyer_id;
-      currentProfile = { profile_id: data.buyer.buyer_id, fullname: data.buyer.fullname, email: data.buyer.email, phone: data.buyer.phone, preferences: data.buyer.preferences, location_address: data.buyer.location_address, latitude: data.buyer.latitude, longitude: data.buyer.longitude };
-      if(currentProfile.latitude && currentProfile.longitude){
-        currentBuyer.latitude = currentProfile.latitude; currentBuyer.longitude = currentProfile.longitude;
+      currentProfile = {
+        profile_id: data.buyer.buyer_id,
+        fullname: data.buyer.fullname,
+        email: data.buyer.email,
+        phone: data.buyer.phone,
+        preferences: data.buyer.preferences,
+        location_address: data.buyer.location_address,
+        latitude: data.buyer.latitude,
+        longitude: data.buyer.longitude
+      };
+      if (currentProfile.latitude && currentProfile.longitude) {
+        currentBuyer.latitude = currentProfile.latitude;
+        currentBuyer.longitude = currentProfile.longitude;
         await loadNearbySellers();
-        switchSection('buyerFormSection','sellersMapSection',3);
+        switchSection('buyerFormSection', 'sellersMapSection', 3);
         setInterval(loadBuyerInquiries, 10000);
-      } else { switchSection('buyerFormSection','buyerFormSection',1); }
-    } else { await loadProfiles(); }
-  } catch(e){ console.warn(e); }
+      } else {
+        switchSection('sellersMapSection', 'buyerFormSection', 1);
+      }
+    } else {
+      await loadProfiles();
+    }
+    // ✅ Always load profiles list (so saved profiles appear)
+    await loadProfiles();
+  } catch (e) {
+    console.warn(e);
+  }
 })();
+
 </script>
 </body>
 </html>

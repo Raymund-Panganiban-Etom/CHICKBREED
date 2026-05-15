@@ -1,0 +1,31 @@
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #fff5eb; padding: 2rem; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 2rem; gap: 1rem; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; font-weight: 700; color: #C62828; }
+        .logo i { font-size: 2rem; color: #F9A825; }
+        .logout-btn { background: #C62828; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 60px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .logout-btn:hover { background: #B71C1C; }
+        #changePasswordBtn { background: #F9A825; color: #5D2906; margin-right: 0.5rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: 24px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #FFE0B2; transition: 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(198,40,40,0.1); }
+        .stat-title { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #C62828; margin-bottom: 0.5rem; }
+        .stat-number { font-size: 2.5rem; font-weight: 700; color: #5D2906; }
+        .search-bar { margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+        .search-bar input { flex: 1; padding: 0.8rem 1rem; border: 1px solid #FFE0B2; border-radius: 60px; background: #FEF9F0; font-size: 1rem; }
+        .search-bar button { background: #C62828; color: white; border: none; padding: 0 1.5rem; border-radius: 60px; cursor: pointer; font-weight: 600; }
+        .btn-outline { background: #FFF3E0 !important; color: #C62828 !important; border: 1px solid #FFE0B2 !important; }
+        .users-section { background: white; border-radius: 24px; padding: 1.5rem; border: 1px solid #FFE0B2; overflow-x: auto; }
+        .users-section h2 { font-size: 1.5rem; margin-bottom: 1rem; color: #C62828; display: flex; align-items: center; gap: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #FFE0B2; }
+        th { background: #FFF3E0; color: #5D2906; font-weight: 600; position: sticky; top: 0; }
+        tr:hover { background: #FFF8F0; }
+        .badge-admin { background: #F9A825; color: #5D2906; padding: 4px 12px; border-radius: 60px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .badge-user { background: #E0E0E0; color: #5D2906; padding: 4px 12px; border-radius: 60px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .btn-delete { background: #C62828; color: white; border: none; padding: 6px 12px; border-radius: 40px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .btn-delete:hover { background: #B71C1C; transform: scale(0.98); }
+        .loading { text-align: center; padding: 2rem; color: #C62828; }
+        @media (max-width: 768px) { body { padding: 1rem; } .stat-number { font-size: 1.8rem; } th, td { padding: 8px 6px; font-size: 0.8rem; } .btn-delete { padding: 4px 8px; font-size: 0.7rem; } }
