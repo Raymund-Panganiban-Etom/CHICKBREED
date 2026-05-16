@@ -126,35 +126,88 @@ async function deleteEntry(locationId){
 }
 
 // ----- Geolocation & consent -----
+// Custom location request with user-friendly guidance
 async function requestDeviceLocation() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      locationStatusDiv.style.display = 'block';
-      locationStatusDiv.innerHTML = '<span class="error">Geolocation not supported</span>';
-      resolve({});
-    } else {
-      locationStatusDiv.style.display = 'block';
-      locationStatusDiv.innerHTML = 'Requesting location...';
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          currentCoords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy };
-          locationStatusDiv.innerHTML = `<span class="success">✓ Location captured: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}</span>`;
-          document.getElementById('coordsLat').textContent = pos.coords.latitude.toFixed(6);
-          document.getElementById('coordsLon').textContent = pos.coords.longitude.toFixed(6);
-          document.getElementById('mapContainer').style.display = 'block';
-          document.getElementById('mapInfo').style.display = 'block';
-          document.getElementById('mapToggle').style.display = 'inline-block';
-          initializeMap(pos.coords.latitude, pos.coords.longitude);
-          resolve(currentCoords);
-        },
-        (err) => {
-          locationStatusDiv.innerHTML = `<span class="error">Location request denied or failed</span>`;
-          resolve({});
-        },
-        {enableHighAccuracy: true, timeout: 10000, maximumAge: 0}
-      );
-    }
-  });
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            locationStatusDiv.innerHTML = '<span class="error">Geolocation not supported by your browser.</span>';
+            resolve({});
+            return;
+        }
+
+        // Show a status message while requesting
+        locationStatusDiv.innerHTML = 'Requesting location...';
+        locationStatusDiv.style.display = 'block';
+
+        // Function to show a custom dialog for permission denial
+        function showPermissionDeniedDialog() {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000;';
+            const content = document.createElement('div');
+            content.style.cssText = 'background:white;border-radius:20px;padding:1.5rem;max-width:90%;width:320px;text-align:center;';
+            content.innerHTML = `
+                <h3 style="color:#C62828;">📍 Location Permission Required</h3>
+                <p style="margin:1rem 0;">You have denied location access. To use this feature, please enable location in your browser settings.</p>
+                <p style="font-size:0.85rem;background:#f0f0f0;padding:8px;border-radius:8px;">
+                    <strong>How to enable:</strong><br>
+                    Android: Tap the lock icon → Site settings → Location → Allow<br>
+                    iOS: Settings → Privacy → Location Services → This site → Allow
+                </p>
+                <button id="retryLocBtn" class="btn" style="margin-top:1rem;">🔁 Try Again</button>
+                <button id="cancelLocBtn" class="btn secondary" style="margin-top:1rem;">✖ Cancel</button>
+            `;
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+
+            document.getElementById('retryLocBtn').onclick = () => {
+                modal.remove();
+                requestDeviceLocation(); // retry
+            };
+            document.getElementById('cancelLocBtn').onclick = () => {
+                modal.remove();
+                locationStatusDiv.innerHTML = '<span class="error">Location permission denied. You can still enter a manual address.</span>';
+                resolve({});
+            };
+        }
+
+        // Request location with a generous timeout for mobile
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                currentCoords = {
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                    accuracy: pos.coords.accuracy
+                };
+                locationStatusDiv.innerHTML = `<span class="success">✓ Location captured: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}</span>`;
+                document.getElementById('coordsLat').textContent = pos.coords.latitude.toFixed(6);
+                document.getElementById('coordsLon').textContent = pos.coords.longitude.toFixed(6);
+                document.getElementById('mapContainer').style.display = 'block';
+                document.getElementById('mapInfo').style.display = 'block';
+                document.getElementById('mapToggle').style.display = 'inline-block';
+                initializeMap(pos.coords.latitude, pos.coords.longitude);
+                resolve(currentCoords);
+            },
+            (err) => {
+                let errorMsg = '';
+                switch(err.code) {
+                    case err.PERMISSION_DENIED:
+                        showPermissionDeniedDialog();
+                        return; // don't resolve yet; retry will call again
+                    case err.POSITION_UNAVAILABLE:
+                        errorMsg = 'GPS signal unavailable. Please turn on location services (GPS) and try again.';
+                        break;
+                    case err.TIMEOUT:
+                        errorMsg = 'Location request timed out. Please try again in a place with better GPS signal.';
+                        break;
+                    default:
+                        errorMsg = 'Location error: ' + err.message;
+                }
+                locationStatusDiv.innerHTML = `<span class="error">${errorMsg}</span>`;
+                resolve({});
+            },
+            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+        );
+    });
 }
 
 function initializeMap(lat, lng){
