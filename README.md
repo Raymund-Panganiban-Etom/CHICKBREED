@@ -18,7 +18,7 @@
 | <img src="https://github.com/user-attachments/assets/4e7ddb99-d0a0-4202-879c-58ffb5049ff8" width="600"> |
 | <img src="https://github.com/user-attachments/assets/159b84c3-73a8-4f6f-8937-bfbd99551715" width="600"> |
 
-## 🚀 OLD UI/UX screenshots
+## 🚀 OLD UI/UX screenshots.....
 
 | | |
 |---|---|
