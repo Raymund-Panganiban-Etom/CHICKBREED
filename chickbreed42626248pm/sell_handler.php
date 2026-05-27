@@ -7,7 +7,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/sell_errors.log');
 ob_clean();
 
-$conn = new mysqli('localhost', 'root', '', 'Chickacc');
+$conn = new mysqli('sql311.infinityfree.com', 'if0_41936100', 'Firstwebapp083', 'if0_41936100_chickacc');
 if ($conn->connect_error) {
     echo json_encode(['success' => false, 'error' => 'DB connection failed']);
     exit;
@@ -87,28 +87,7 @@ if ($action === 'saveEntry') {
     $consent_text = trim($_POST['consent_text'] ?? 'Consent given');
     $device_info = trim($_POST['device_info'] ?? '');
 
-    // Photo processing (BLOB)
-// ---------- SAVE ENTRY (with photo compression to ≤100KB) ----------
-if ($action === 'saveEntry') {
-    if (empty($_SESSION['user_id'])) {
-        echo json_encode(['success' => false, 'error' => 'Session expired']);
-        exit;
-    }
-    $user_id = (int)$_SESSION['user_id'];
-    $description = trim($_POST['description'] ?? '');
-    if (strlen($description) < 2) {
-        echo json_encode(['success' => false, 'error' => 'Description required']);
-        exit;
-    }
-    $socmed = trim($_POST['socmed'] ?? '');
-    $number = trim($_POST['number'] ?? '');
-    $location_address = trim($_POST['location_address'] ?? '');
-    $latitude = !empty($_POST['latitude']) ? (float)$_POST['latitude'] : null;
-    $longitude = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
-    $consent_text = trim($_POST['consent_text'] ?? 'Consent given');
-    $device_info = trim($_POST['device_info'] ?? '');
-
-    // ---------- AGGRESSIVE COMPRESSION (ensures ≤100KB) ----------
+    // ---------- Enhanced image handling ----------
     $photo_data = null;
     $photo_name = null;
     if (!empty($_POST['photo_base64'])) {
@@ -122,18 +101,68 @@ if ($action === 'saveEntry') {
             exit;
         }
 
-        if (!extension_loaded('gd')) {
-            echo json_encode(['success' => false, 'error' => 'GD library not installed – cannot compress image']);
+        // 1. Reject overly large uploads early (e.g., max 5 MB encoded string)
+        if (strlen($base64) > 5 * 1024 * 1024) {
+            echo json_encode(['success' => false, 'error' => 'Image too large. Max size 5 MB.']);
             exit;
         }
 
+        // 2. Validate image signature (magic bytes)
+        $allowed_signatures = [
+            'jpeg' => "\xFF\xD8\xFF",
+            'png'  => "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A",
+            'gif'  => ['GIF87a', 'GIF89a']
+        ];
+        $valid = false;
+        $format = null;
+        // Check JPEG
+        if (substr($image_data, 0, 3) === $allowed_signatures['jpeg']) {
+            $valid = true;
+            $format = 'jpeg';
+        }
+        // Check PNG
+        elseif (substr($image_data, 0, 8) === $allowed_signatures['png']) {
+            $valid = true;
+            $format = 'png';
+        }
+        // Check GIF (first 6 bytes)
+        else {
+            $gif_header = substr($image_data, 0, 6);
+            if ($gif_header === $allowed_signatures['gif'][0] || $gif_header === $allowed_signatures['gif'][1]) {
+                $valid = true;
+                $format = 'gif';
+            }
+        }
+
+        if (!$valid) {
+            echo json_encode(['success' => false, 'error' => 'Invalid image format. Only JPEG, PNG, GIF allowed.']);
+            exit;
+        }
+
+        // 3. GD library check
+        if (!extension_loaded('gd')) {
+            echo json_encode(['success' => false, 'error' => 'GD library not installed']);
+            exit;
+        }
+
+        // 4. Create image from string
         $source = @imagecreatefromstring($image_data);
         if (!$source) {
-            echo json_encode(['success' => false, 'error' => 'Unsupported image format']);
+            echo json_encode(['success' => false, 'error' => 'Unsupported or corrupted image.']);
             exit;
         }
 
-        // Resize to max 1200px (fits any screen, compresses well)
+        // 5. Convert to truecolor if needed (for GIF/PNG with palette)
+        if (!imageistruecolor($source)) {
+            $width = imagesx($source);
+            $height = imagesy($source);
+            $truecolor = imagecreatetruecolor($width, $height);
+            imagecopy($truecolor, $source, 0, 0, 0, 0, $width, $height);
+            imagedestroy($source);
+            $source = $truecolor;
+        }
+
+        // 6. Resize to max 1200px
         $max_dim = 1200;
         $orig_width = imagesx($source);
         $orig_height = imagesy($source);
@@ -147,25 +176,28 @@ if ($action === 'saveEntry') {
             $source = $resized;
         }
 
+        // 7. Compress to JPEG under 100KB (always output JPEG for consistency)
         $target_size = 100 * 1024; // 100KB
         $quality = 70;
         $compressed = null;
-
-        // Try up to 10 quality levels
         for ($i = 0; $i < 10; $i++) {
             ob_start();
             imagejpeg($source, null, $quality);
             $compressed = ob_get_clean();
-            if (strlen($compressed) <= $target_size) {
-                break;
-            }
+            if (strlen($compressed) <= $target_size) break;
             $quality -= 5;
             if ($quality < 15) $quality = 15;
         }
         imagedestroy($source);
 
         if ($compressed === null || strlen($compressed) > $target_size) {
-            echo json_encode(['success' => false, 'error' => 'Image too large to compress under 100KB. Please upload a smaller image (max 2MB, under 1200px).']);
+            echo json_encode(['success' => false, 'error' => 'Image too large to compress under 100KB. Please upload a smaller image.']);
+            exit;
+        }
+
+        // 8. Final check: verify the compressed blob is a valid JPEG (just in case)
+        if (substr($compressed, 0, 3) !== "\xFF\xD8\xFF") {
+            echo json_encode(['success' => false, 'error' => 'Image compression failed.']);
             exit;
         }
 
@@ -184,16 +216,6 @@ if ($action === 'saveEntry') {
     exit;
 }
 
-    $stmt = $conn->prepare("INSERT INTO locations (user_id, description, socmed, number, location_address, latitude, longitude, photo, photo_name, consent_text, device_info, saved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("issssddssss", $user_id, $description, $socmed, $number, $location_address, $latitude, $longitude, $photo_data, $photo_name, $consent_text, $device_info);
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'location_id' => $stmt->insert_id]);
-    } else {
-        echo json_encode(['success' => false, 'error' => $stmt->error]);
-    }
-    $stmt->close();
-    exit;
-}
 
 // ---------- DELETE ENTRY ----------
 if ($action === 'deleteEntry') {
