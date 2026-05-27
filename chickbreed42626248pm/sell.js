@@ -1,4 +1,3 @@
-
 // Helper: escape HTML
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -30,19 +29,14 @@ window.addEventListener('DOMContentLoaded', () => {
         fetchNotifications();
         setInterval(fetchNotifications, 12000);
       } else {
-        const uid = prompt('Please enter your User ID:');
-        if (uid) {
-          currentUserId = parseInt(uid);
-          sessionStorage.setItem('sellUserId', uid);
-          renderList();
-          fetchNotifications();
-          setInterval(fetchNotifications, 12000);
-        } else {
-          listEl.innerHTML = '<div class="small error">Authentication required. Please log in first.</div>';
-        }
+        // No session – redirect to login (safe, no prompt)
+        window.location.href = 'login.php';
       }
     })
-    .catch(e => console.warn(e));
+    .catch(e => {
+      console.warn(e);
+      window.location.href = 'login.php';
+    });
 });
 
 // toggle form
