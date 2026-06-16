@@ -7,7 +7,7 @@
 | <img src="https://github.com/user-attachments/assets/f3e99098-a80c-4cf9-96bc-b1a3e20b16de" width="200"> | <img src="https://github.com/user-attachments/assets/ef632b8e-0f53-48c1-9659-854b93cc79e7" width="200"> | <img src="https://github.com/user-attachments/assets/4af7084a-4d87-4d14-9bff-935c8c267848" width="200"> |
 | <img src="https://github.com/user-attachments/assets/83779e93-76a7-4f99-b6e8-abf961a8ada4" width="200"> | <img src="https://github.com/user-attachments/assets/4a8a37cb-4076-4e38-b8ce-e7b10cede26d" width="200"> | <img src="https://github.com/user-attachments/assets/71f3453b-212f-4413-ada8-b3ed495f4f79" width="200"> |
 
-## 🖥️ Desktop interface......
+## 🖥️ Desktop interface.
 
 | NEW UI/UX Desktop views |
 |---------------|
