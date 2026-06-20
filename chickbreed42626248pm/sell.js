@@ -76,15 +76,15 @@ async function renderList(){
       const img = document.createElement('img'); img.className = 'thumb';
       img.src = `sell_handler.php?action=getPhoto&location_id=${it.location_id}`;
       img.onerror = () => { img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="72"><rect width="100%" height="100%" fill="%23f0f2f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23b0b6c3" font-size="12">No photo</text></svg>'; };
-      const lat = parseFloat(it.latitude);
-      const lng = parseFloat(it.longitude);
+const lat = parseFloat(it.fuzzy_lat);   // may be null if no location
+const lng = parseFloat(it.fuzzy_lng);
       const meta = document.createElement('div'); meta.className = 'meta';
       meta.innerHTML = `
         <h4>${escapeHtml(it.description || '(no description)')}</h4>
         <p><strong>Social:</strong> ${escapeHtml(it.socmed || '-')}</p>
         <p><strong>Number:</strong> ${escapeHtml(it.number || '-')}</p>
         <p><strong>Location:</strong> ${escapeHtml(it.location_address || '-')}</p>
-        <p><em style="color:var(--muted);font-size:12px">Coordinates: ${(!isNaN(lat) && !isNaN(lng)) ? `(${lat.toFixed(4)}, ${lng.toFixed(4)})` : 'N/A'}</em></p>
+        <p><em style="color:var(--muted);font-size:12px">Approximate location shown</em></p>
         <p><em style="color:var(--muted);font-size:12px">Saved: ${new Date(it.saved_at).toLocaleString()}</em></p>
       `;
       if (!isNaN(lat) && !isNaN(lng)) {

@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/encryption.php';   // must be before any saveEntry use
 header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -7,7 +8,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/sell_errors.log');
 ob_clean();
 
-$conn = new mysqli('sql311.infinityfree.com', 'if0_41936100', 'Firstwebapp083', 'if0_41936100_chickacc');
+$conn = new mysqli('localhost', 'root', '', 'Chickacc');
 if ($conn->connect_error) {
     echo json_encode(['success' => false, 'error' => 'DB connection failed']);
     exit;
@@ -58,36 +59,89 @@ if ($action === 'getEntries') {
         exit;
     }
     $user_id = (int)$_SESSION['user_id'];
-    $stmt = $conn->prepare("SELECT location_id, description, socmed, number, location_address, latitude, longitude, photo_name, saved_at FROM locations WHERE user_id = ? ORDER BY saved_at DESC");
+
+    // Select all needed fields, including encrypted coords
+    $stmt = $conn->prepare("SELECT location_id, description, socmed, number, location_address,
+                                   exact_lat_encrypted, exact_lng_encrypted, 
+                                   photo_name, saved_at
+                            FROM locations 
+                            WHERE user_id = ?
+                            ORDER BY saved_at DESC");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    echo json_encode(['success' => true, 'data' => $data]);
+    $result = $stmt->get_result();
+
+    $items = [];
+    while ($row = $result->fetch_assoc()) {
+        // Default fuzzy values = null
+        $row['fuzzy_lat'] = null;
+        $row['fuzzy_lng'] = null;
+
+        // Decrypt and fuzzify if we have encrypted data
+        if (!is_null($row['exact_lat_encrypted']) && !is_null($row['exact_lng_encrypted'])) {
+            try {
+                $exactLat = decryptCoordinate($row['exact_lat_encrypted']);
+                $exactLng = decryptCoordinate($row['exact_lng_encrypted']);
+                $fuzzy = getFuzzyCoords($exactLat, $exactLng);
+                $row['fuzzy_lat'] = $fuzzy['lat'];
+                $row['fuzzy_lng'] = $fuzzy['lng'];
+            } catch (\Exception $e) {
+                // Leave fuzzy as null
+            }
+        }
+        // Remove encrypted binary from output (it’s huge and useless for frontend)
+        unset($row['exact_lat_encrypted'], $row['exact_lng_encrypted']);
+
+        $items[] = $row;
+    }
     $stmt->close();
+
+    echo json_encode(['success' => true, 'data' => $items]);
     exit;
 }
 
 // ---------- SAVE ENTRY (with photo & location) ----------
 if ($action === 'saveEntry') {
+    // RA 10173 Sec 12 – Consent already recorded in consent_text
+
     if (empty($_SESSION['user_id'])) {
         echo json_encode(['success' => false, 'error' => 'Session expired']);
         exit;
     }
     $user_id = (int)$_SESSION['user_id'];
+
     $description = trim($_POST['description'] ?? '');
     if (strlen($description) < 2) {
         echo json_encode(['success' => false, 'error' => 'Description required']);
         exit;
     }
-    $socmed = trim($_POST['socmed'] ?? '');
-    $number = trim($_POST['number'] ?? '');
-    $location_address = trim($_POST['location_address'] ?? '');
-    $latitude = !empty($_POST['latitude']) ? (float)$_POST['latitude'] : null;
-    $longitude = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
-    $consent_text = trim($_POST['consent_text'] ?? 'Consent given');
-    $device_info = trim($_POST['device_info'] ?? '');
 
-    // ---------- Enhanced image handling ----------
+    $socmed       = trim($_POST['socmed'] ?? '');
+    $number       = trim($_POST['number'] ?? '');
+    $location_address = trim($_POST['location_address'] ?? '');
+    $latitude_raw = !empty($_POST['latitude'])  ? (float)$_POST['latitude'] : null;
+    $longitude_raw = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
+    $consent_text = trim($_POST['consent_text'] ?? 'Consent given');
+    $device_info  = trim($_POST['device_info'] ?? '');
+
+    // ---------- ENCRYPT EXACT COORDINATES (RA 10173 Sec 20) ----------
+    $exact_lat_encrypted = null;
+    $exact_lng_encrypted = null;
+    if ($latitude_raw !== null && $longitude_raw !== null) {
+        try {
+            $exact_lat_encrypted = encryptCoordinate($latitude_raw);
+            $exact_lng_encrypted = encryptCoordinate($longitude_raw);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'error' => 'Encryption error: ' . $e->getMessage()]);
+            exit;
+        }
+    }
+
+    // Retention: 30 days from now (RA 10173 Sec 11e – Storage Limitation)
+    $retention_until = date('Y-m-d H:i:s', strtotime('+30 days'));
+    $is_business_address = 0; // default false
+
+    // ---------- Enhanced image handling (unchanged) ----------
     $photo_data = null;
     $photo_name = null;
     if (!empty($_POST['photo_base64'])) {
@@ -101,7 +155,7 @@ if ($action === 'saveEntry') {
             exit;
         }
 
-        // 1. Reject overly large uploads early (e.g., max 5 MB encoded string)
+        // 1. Reject overly large uploads early (max 5 MB encoded string)
         if (strlen($base64) > 5 * 1024 * 1024) {
             echo json_encode(['success' => false, 'error' => 'Image too large. Max size 5 MB.']);
             exit;
@@ -114,26 +168,16 @@ if ($action === 'saveEntry') {
             'gif'  => ['GIF87a', 'GIF89a']
         ];
         $valid = false;
-        $format = null;
-        // Check JPEG
         if (substr($image_data, 0, 3) === $allowed_signatures['jpeg']) {
             $valid = true;
-            $format = 'jpeg';
-        }
-        // Check PNG
-        elseif (substr($image_data, 0, 8) === $allowed_signatures['png']) {
+        } elseif (substr($image_data, 0, 8) === $allowed_signatures['png']) {
             $valid = true;
-            $format = 'png';
-        }
-        // Check GIF (first 6 bytes)
-        else {
+        } else {
             $gif_header = substr($image_data, 0, 6);
             if ($gif_header === $allowed_signatures['gif'][0] || $gif_header === $allowed_signatures['gif'][1]) {
                 $valid = true;
-                $format = 'gif';
             }
         }
-
         if (!$valid) {
             echo json_encode(['success' => false, 'error' => 'Invalid image format. Only JPEG, PNG, GIF allowed.']);
             exit;
@@ -152,9 +196,9 @@ if ($action === 'saveEntry') {
             exit;
         }
 
-        // 5. Convert to truecolor if needed (for GIF/PNG with palette)
+        // 5. Convert to truecolor if needed
         if (!imageistruecolor($source)) {
-            $width = imagesx($source);
+            $width  = imagesx($source);
             $height = imagesy($source);
             $truecolor = imagecreatetruecolor($width, $height);
             imagecopy($truecolor, $source, 0, 0, 0, 0, $width, $height);
@@ -164,11 +208,11 @@ if ($action === 'saveEntry') {
 
         // 6. Resize to max 1200px
         $max_dim = 1200;
-        $orig_width = imagesx($source);
+        $orig_width  = imagesx($source);
         $orig_height = imagesy($source);
         if ($orig_width > $max_dim || $orig_height > $max_dim) {
             $scale = $max_dim / max($orig_width, $orig_height);
-            $new_width = (int)($orig_width * $scale);
+            $new_width  = (int)($orig_width * $scale);
             $new_height = (int)($orig_height * $scale);
             $resized = imagecreatetruecolor($new_width, $new_height);
             imagecopyresampled($resized, $source, 0, 0, 0, 0, $new_width, $new_height, $orig_width, $orig_height);
@@ -176,8 +220,8 @@ if ($action === 'saveEntry') {
             $source = $resized;
         }
 
-        // 7. Compress to JPEG under 100KB (always output JPEG for consistency)
-        $target_size = 100 * 1024; // 100KB
+        // 7. Compress to JPEG under 100KB
+        $target_size = 100 * 1024;
         $quality = 70;
         $compressed = null;
         for ($i = 0; $i < 10; $i++) {
@@ -195,7 +239,7 @@ if ($action === 'saveEntry') {
             exit;
         }
 
-        // 8. Final check: verify the compressed blob is a valid JPEG (just in case)
+        // 8. Final JPEG signature check
         if (substr($compressed, 0, 3) !== "\xFF\xD8\xFF") {
             echo json_encode(['success' => false, 'error' => 'Image compression failed.']);
             exit;
@@ -205,8 +249,35 @@ if ($action === 'saveEntry') {
         $photo_name = 'img_' . time() . '_' . rand(100, 999) . '.jpg';
     }
 
-    $stmt = $conn->prepare("INSERT INTO locations (user_id, description, socmed, number, location_address, latitude, longitude, photo, photo_name, consent_text, device_info, saved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("issssddssss", $user_id, $description, $socmed, $number, $location_address, $latitude, $longitude, $photo_data, $photo_name, $consent_text, $device_info);
+    // ---------- DATABASE INSERT ----------
+    $stmt = $conn->prepare("INSERT INTO locations 
+        (user_id, description, socmed, number, location_address, 
+         exact_lat_encrypted, exact_lng_encrypted, retention_until, is_business_address, 
+         photo, photo_name, consent_text, device_info, saved_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => 'Prepare failed: ' . $conn->error]);
+        exit;
+    }
+
+    // Bind parameters – types: i (int), s (string), b (blob) – but we treat blob as string 's'
+    $stmt->bind_param("isssssssissss",
+        $user_id,              // i
+        $description,          // s
+        $socmed,               // s
+        $number,               // s
+        $location_address,     // s
+        $exact_lat_encrypted,  // s (binary string)
+        $exact_lng_encrypted,  // s
+        $retention_until,      // s
+        $is_business_address,  // i
+        $photo_data,           // s (blob)
+        $photo_name,           // s
+        $consent_text,         // s
+        $device_info           // s
+    );
+
     if ($stmt->execute()) {
         echo json_encode(['success' => true, 'location_id' => $stmt->insert_id]);
     } else {
@@ -215,7 +286,6 @@ if ($action === 'saveEntry') {
     $stmt->close();
     exit;
 }
-
 
 // ---------- DELETE ENTRY ----------
 if ($action === 'deleteEntry') {
