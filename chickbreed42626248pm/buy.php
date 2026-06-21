@@ -12,23 +12,19 @@ $logged_user_id = (int)$_SESSION['user_id'];
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes" />
 <title>Find Sellers Near You – Chickbreed</title>
- <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="stylesheet" href="buy.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
+<!-- No Leaflet, no MarkerCluster -->
 </head>
 <body>
 <div class="container">
   <input type="hidden" id="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-  <h1>🐔 Find Local Sellers Near You</h1>
+
+  <h1>🐔 Find Local Sellers in Your City</h1>
   <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
     <a href="home.php" class="btn" style="background:#F9A825; color:#5D2906; text-decoration:none;"><i class="fas fa-home"></i> Back to Home</a>
-    <input type="hidden" id="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-</div>
+  </div>
+
   <div class="step-indicator">
     <div class="step active" id="step1">1. Your Info</div>
     <div class="step" id="step2">2. Consent</div>
@@ -51,15 +47,11 @@ $logged_user_id = (int)$_SESSION['user_id'];
       <input type="tel" id="phone" required placeholder="+63 912 345 6789">
       <label>What are you looking for? *</label>
       <textarea id="preferences" required placeholder="e.g., free-range chickens, eggs, poultry supplies..."></textarea>
-      <label>Address (optional)</label>
-      <input type="text" id="location" placeholder="Barangay, City">
+      <label>Your City *</label>
+      <input type="text" id="cityInput" required placeholder="e.g., Tuguegarao City, Muntinlupa City">
+      <!-- No GPS button -->
       <div class="row">
-        <button type="button" class="btn" id="captureLocBtn">📍 Capture My GPS Location</button>
         <button type="submit" class="btn success">Continue →</button>
-      </div>
-      <div id="locationStatus" class="status" style="display:none"></div>
-      <div id="coordsDisplay" class="coords-display" style="display:none">
-        <p><strong>📍 Captured coordinates:</strong> <span id="capturedLat">-</span>, <span id="capturedLng">-</span></p>
       </div>
     </form>
     <div style="margin-top:12px;">
@@ -77,14 +69,11 @@ $logged_user_id = (int)$_SESSION['user_id'];
     <h2>Data Privacy Act Consent (RA 10173)</h2>
     <div class="consent-text">
       <p><strong>Republic Act No. 10173 – Data Privacy Act of 2012</strong></p>
-      <p>By proceeding, you explicitly grant your consent to the collection, processing, and storage of your personal data (name, email, phone, location) for connecting you with nearby sellers.</p>
+      <p>By proceeding, you explicitly grant your consent to the collection, processing, and storage of your personal data (name, email, phone, city) for connecting you with nearby sellers.</p>
     </div>
     <div class="checkbox-group">
       <input type="checkbox" id="termsCheck">
       <label for="termsCheck">I have read and agree.</label>
-    </div>
-    <div id="termsLocationDisplay" class="coords-display" style="display:none">
-      <p>📍 Your location: <span id="termsLat">-</span>, <span id="termsLng">-</span></p>
     </div>
     <div class="row">
       <button class="btn secondary" id="backToFormBtn">← Back</button>
@@ -92,18 +81,17 @@ $logged_user_id = (int)$_SESSION['user_id'];
     </div>
   </div>
 
-  <!-- Step 3: Map and seller list with enhanced search -->
+  <!-- Step 3: Seller list (no map) -->
   <div class="section hidden" id="sellersMapSection">
-    <h2>Nearby Sellers (within <span id="radiusKmDisplay">20</span> km)</h2>
+    <h2>Sellers in Your City</h2>
     <div id="sellersCount" class="status" style="display:none"></div>
     <div class="row">
-      <input type="search" id="searchInput" placeholder="🔍 Search by breed, product, or location (e.g., leghorn)" style="flex:2;">
-      <input type="number" id="radiusInput" value="20" min="1" max="200" style="width:100px;">
+      <input type="search" id="searchInput" placeholder="🔍 Search by breed, product, or keyword">
       <button class="btn" id="applyFilterBtn">Filter</button>
       <button class="btn secondary" id="refreshSellersBtn">Refresh List</button>
       <button class="btn secondary" id="editInfoBtn">Edit My Info</button>
     </div>
-    <div class="map-container" id="mapContainer"><div id="mapView" style="height:100%;"></div></div>
+    <!-- Map container removed -->
     <div id="sellersGrid" class="seller-grid"></div>
     <div id="inquiriesSection" style="margin-top:20px;">
       <h3>Your Inquiries</h3>
@@ -113,7 +101,7 @@ $logged_user_id = (int)$_SESSION['user_id'];
     <button class="btn secondary" id="backToTermsBtn">← Back</button>
   </div>
 
-  <!-- Step 4: Seller detail + message -->
+  <!-- Step 4: Seller detail + message (unchanged) -->
   <div class="section hidden" id="sellerDetailSection">
     <h2 id="sellerTitle">Seller Details</h2>
     <div id="sellerInfo" style="background:#f0f2f6;padding:16px;border-radius:12px;margin:16px 0"></div>
@@ -133,7 +121,6 @@ $logged_user_id = (int)$_SESSION['user_id'];
     </form>
   </div>
 </div>
-<div id="modalBackdrop"></div>
 
 <script>
 const LOGGED_USER_ID = <?php echo json_encode($logged_user_id); ?>;
