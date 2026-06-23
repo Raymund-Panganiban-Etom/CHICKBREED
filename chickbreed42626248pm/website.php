@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Chickbreed – Raising Quality Poultry</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
     <link rel="stylesheet" href="website.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -50,7 +51,7 @@
     </div>
     <div class="features-grid">
         <div class="feature-card fade-up">
-            <div class="feature-icon"><i class="fas fa-chicken"></i></div>
+            <div class="feature-icon"><i class="fas fa-feather"></i></div>
             <h3>List your chickens</h3>
             <p>Add photos, description, price, and location – reach buyers in your area.</p>
         </div>
@@ -100,15 +101,15 @@
 <div class="container counter-section fade-up">
     <div class="counter-grid" id="counterGrid">
         <div class="counter-item">
-            <h3><span class="counter" data-target="1520">0</span>+</h3>
+            <h3><span class="counter" data-target="15">0</span>+</h3>
             <p>Active Users</p>
         </div>
         <div class="counter-item">
-            <h3><span class="counter" data-target="842">0</span>+</h3>
+            <h3><span class="counter" data-target="8">0</span>+</h3>
             <p>Listings Sold</p>
         </div>
         <div class="counter-item">
-            <h3><span class="counter" data-target="124">0</span></h3>
+            <h3><span class="counter" data-target="12">0</span></h3>
             <p>Trusted Sellers</p>
         </div>
         <div class="counter-item">
@@ -138,7 +139,7 @@
             <div class="product-info">
                 <h4>White Leghorn</h4>
                 <p>Excellent egg layers</p>
-                <div class="product-price">250 PHP</div>
+                <div class="product-price">₱250</div>
             </div>
         </div>
         <div class="product-card fade-up">
@@ -194,9 +195,9 @@
         <div class="footer-col">
             <h4>Follow us</h4>
             <div class="social-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61590220715325"><i class="fab fa-facebook"></i></a>
+                <!-- <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a> -->
             </div>
         </div>
     </div>
