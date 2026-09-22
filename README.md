@@ -1,4 +1,4 @@
-## 📱 Mobile interface
+## 📱 Mobile interface.
 
 | | | |
 |---|---|---|
